@@ -1,4 +1,18 @@
 
+// Fix the viewport height on mobile
+function adjustViewportHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Call the function on first load
+adjustViewportHeight();
+
+// Call the function on resize
+window.addEventListener('resize', adjustViewportHeight);
+
+
+
 // Function to set the adoption form URL
 function setAdoptionFormUrl(url) {
   const adoptionButton = document.getElementById('adoption-button');

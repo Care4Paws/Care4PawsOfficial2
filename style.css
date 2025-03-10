@@ -10,6 +10,7 @@
   --card-hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   --button-text: #fff;
   --transition-speed: 0.3s;
+  --vh: 1vh;
 }
 
 [data-theme="dark"] {
@@ -44,6 +45,8 @@ body {
   background-size: cover;
   position: relative;
   color: var(--text-color);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body::before {
@@ -503,14 +506,15 @@ p {
 
 @media (max-width: 768px) {
   .container {
-    width: 90%;
-    padding: 30px 20px;
+    width: 95%;
+    padding: 20px 15px;
+    margin: 15px auto;
   }
 
   .top-nav {
-    padding: 15px;
+    padding: 10px;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
   }
 
   .nav-group {
@@ -525,11 +529,72 @@ p {
   .user-menu {
     position: relative;
     left: 0;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     justify-content: center;
+    width: 100%;
   }
 
-  .pet-lessons-section {
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  .nav-button {
+    padding: 8px 12px;
+    font-size: 12px;
+    margin: 0 3px;
+  }
+
+  .pet-lessons-section, .trainers-section, .contact-section, .support-section {
     grid-template-columns: 1fr;
+  }
+
+  .faq-item, .trainer-card, .contact-card, .support-card {
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  .theme-toggle {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    width: 100%;
+    padding: 15px 10px;
+    border-radius: 10px;
+  }
+
+  .top-nav {
+    padding: 8px 5px;
+  }
+
+  .nav-button {
+    padding: 6px 10px;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .theme-toggle {
+    width: 25px;
+    height: 25px;
+  }
+
+  .form-group input {
+    padding: 8px;
+  }
+
+  .auth-button {
+    padding: 10px;
   }
 }
