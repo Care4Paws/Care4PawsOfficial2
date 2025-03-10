@@ -444,6 +444,124 @@ p {
   box-shadow: 0 4px 12px var(--shadow-color);
 }
 
+/* Adoption Dropdown Styles */
+.adoption-dropdown {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 10px 0;
+  z-index: 1000;
+  min-width: 250px;
+}
+
+.adoption-option {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.adoption-option:hover {
+  background-color: var(--hover-color, rgba(0,0,0,0.1));
+}
+
+/* Password Dialog Styles */
+.password-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.password-dialog-content {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dialog-buttons button {
+  padding: 8px 15px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.dialog-buttons button:first-child {
+  background-color: var(--muted-color, #ccc);
+}
+
+.dialog-buttons button:last-child {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Password Modal Styles */
+.password-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.password-modal-content {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.password-list table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+.password-list th, .password-list td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #ddd);
+}
+
+.password-list th {
+  background-color: var(--hover-color, rgba(0,0,0,0.05));
+}
+
+#close-modal {
+  padding: 8px 15px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-top: 15px;
+  cursor: pointer;
+  float: right;
+}
+
 /* Profile Page Styles */
 .profile-section {
   background-color: var(--card-bg);

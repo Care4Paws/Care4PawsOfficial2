@@ -13,18 +13,255 @@ window.addEventListener('resize', adjustViewportHeight);
 
 
 
-// Function to set the adoption form URL
-function setAdoptionFormUrl(url) {
+// Function to generate a random password
+function generatePassword(length = 8) {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  return password;
+}
+
+// Function to handle adoption button click
+function setupAdoptionButton() {
   const adoptionButton = document.getElementById('adoption-button');
   if (adoptionButton) {
-    adoptionButton.onclick = function() {
-      window.location.href = url;
+    adoptionButton.onclick = function(e) {
+      e.preventDefault();
+      
+      // Create the dropdown
+      const menu = document.createElement('div');
+      menu.className = 'adoption-dropdown';
+      menu.innerHTML = `
+        <div class="adoption-option" id="pawrent-option">Ready to be a Pawrent?</div>
+        <div class="adoption-option" id="prep-option">Προετοιμασία πριν την υιοθεσία</div>
+      `;
+      
+      // Position the dropdown
+      const buttonRect = adoptionButton.getBoundingClientRect();
+      menu.style.position = 'absolute';
+      menu.style.top = `${buttonRect.bottom + window.scrollY}px`;
+      menu.style.left = `${buttonRect.left + window.scrollX}px`;
+      
+      // Remove any existing dropdown
+      const existingDropdown = document.querySelector('.adoption-dropdown');
+      if (existingDropdown) {
+        existingDropdown.remove();
+      }
+      
+      // Add the dropdown to the page
+      document.body.appendChild(menu);
+      
+      // Handle option clicks
+      document.getElementById('pawrent-option').addEventListener('click', function() {
+        window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=sharing';
+      });
+      
+      document.getElementById('prep-option').addEventListener('click', async function() {
+        // Check if user is logged in
+        const currentUser = await getUserData();
+        if (!currentUser) {
+          // Redirect to login with preparation redirect
+          window.location.href = 'login.html?redirect=preparation.html';
+          return;
+        }
+        
+        // Check if user has a preparation password
+        let userData = await getUserFullData(currentUser.email);
+        
+        if (!userData.prepPassword) {
+          // Generate a password for the user if they don't have one
+          userData.prepPassword = generatePassword();
+          await updateUserData(userData);
+        }
+        
+        // Show password input dialog
+        showPasswordDialog();
+      });
+      
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function closeDropdown(e) {
+        if (!menu.contains(e.target) && e.target !== adoptionButton) {
+          menu.remove();
+          document.removeEventListener('click', closeDropdown);
+        }
+      });
     };
   }
 }
 
-// Setting the adoption form URL
-setAdoptionFormUrl('https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=sharing');
+// Show password dialog for preparation access
+function showPasswordDialog() {
+  const dialog = document.createElement('div');
+  dialog.className = 'password-dialog';
+  dialog.innerHTML = `
+    <div class="password-dialog-content">
+      <h3>Προετοιμασία πριν την υιοθεσία</h3>
+      <p>Η σελίδα αυτή απαιτεί έναν κωδικό πρόσβασης. Παρακαλώ επικοινωνήστε με τη διαχείριση του Care4Paws για τον κωδικό σας.</p>
+      <div class="form-group password-field">
+        <label for="prep-password">Κωδικός:</label>
+        <input type="password" id="prep-password">
+      </div>
+      <div class="dialog-buttons">
+        <button id="cancel-prep">Ακύρωση</button>
+        <button id="submit-prep">Επιβεβαίωση</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  
+  // Handle cancel
+  document.getElementById('cancel-prep').addEventListener('click', function() {
+    dialog.remove();
+  });
+  
+  // Handle submit
+  document.getElementById('submit-prep').addEventListener('click', async function() {
+    const passwordInput = document.getElementById('prep-password').value;
+    const currentUser = await getUserData();
+    
+    if (!currentUser) {
+      dialog.remove();
+      return;
+    }
+    
+    const userData = await getUserFullData(currentUser.email);
+    
+    if (passwordInput === userData.prepPassword) {
+      // Password is correct, redirect to preparation page
+      dialog.remove();
+      window.location.href = 'preparation.html';
+    } else {
+      // Show error
+      const errorElem = document.createElement('p');
+      errorElem.className = 'error-message';
+      errorElem.textContent = 'Λάθος κωδικός πρόσβασης';
+      
+      const content = dialog.querySelector('.password-dialog-content');
+      const existingError = content.querySelector('.error-message');
+      if (existingError) existingError.remove();
+      
+      content.appendChild(errorElem);
+    }
+  });
+}
+
+// Helper function to get full user data including password
+async function getUserFullData(email) {
+  try {
+    const deviceId = getDeviceIdentifier();
+    let usersData = localStorage.getItem('users');
+    let users = [];
+    
+    if (usersData) {
+      try {
+        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+      } catch (e) {
+        users = JSON.parse(usersData);
+      }
+    }
+    
+    return users.find(user => user.email === email) || null;
+  } catch (e) {
+    console.error('Error getting user data:', e);
+    return null;
+  }
+}
+
+// Helper function to update user data
+async function updateUserData(userData) {
+  try {
+    const deviceId = getDeviceIdentifier();
+    let usersData = localStorage.getItem('users');
+    let users = [];
+    
+    if (usersData) {
+      try {
+        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+      } catch (e) {
+        users = JSON.parse(usersData);
+      }
+    }
+    
+    const userIndex = users.findIndex(user => user.email === userData.email);
+    if (userIndex !== -1) {
+      users[userIndex] = userData;
+      
+      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
+      localStorage.setItem('users', encryptedUsers);
+    }
+  } catch (e) {
+    console.error('Error updating user data:', e);
+  }
+}
+
+// Function to display all user passwords (admin function)
+function showAllUserPasswords() {
+  // Check if user is admin (this is a placeholder - you'd need to implement actual admin check)
+  getUserData().then(async currentUser => {
+    if (!currentUser || currentUser.email !== 'admin@care4paws.com') {
+      alert('You need admin rights to access this function.');
+      return;
+    }
+    
+    try {
+      const deviceId = getDeviceIdentifier();
+      let usersData = localStorage.getItem('users');
+      let users = [];
+      
+      if (usersData) {
+        try {
+          users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+        } catch (e) {
+          users = JSON.parse(usersData);
+        }
+      }
+      
+      if (users.length === 0) {
+        alert('No users found in the system.');
+        return;
+      }
+      
+      // Create modal to display passwords
+      const modal = document.createElement('div');
+      modal.className = 'password-modal';
+      
+      let passwordList = '<div class="password-list"><h3>User Preparation Passwords</h3><table>';
+      passwordList += '<tr><th>Username</th><th>Email</th><th>Preparation Password</th></tr>';
+      
+      users.forEach(user => {
+        const username = user.username || 'No username';
+        const prepPassword = user.prepPassword || 'Not generated';
+        passwordList += `<tr><td>${username}</td><td>${user.email}</td><td>${prepPassword}</td></tr>`;
+      });
+      
+      passwordList += '</table></div>';
+      
+      modal.innerHTML = `
+        <div class="password-modal-content">
+          ${passwordList}
+          <button id="close-modal">Close</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      document.getElementById('close-modal').addEventListener('click', function() {
+        modal.remove();
+      });
+      
+    } catch (e) {
+      console.error('Error displaying passwords:', e);
+      alert('Error retrieving user data.');
+    }
+  });
+}
+
+// Initialize adoption button when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupAdoptionButton);
 
 
 
