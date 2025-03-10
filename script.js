@@ -23,8 +23,8 @@ function setAdoptionFormUrl(url) {
   }
 }
 
-// You can call this function later with the Google Forms URL
-// Example: setAdoptionFormUrl('https://forms.google.com/your-form-url');
+// Setting the adoption form URL
+setAdoptionFormUrl('https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=sharing');
 
 
 
