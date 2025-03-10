@@ -198,15 +198,10 @@ async function updateUserData(userData) {
   }
 }
 
-// Function to display all user passwords (admin function)
+// Function to display all user passwords (prints to console)
 function showAllUserPasswords() {
-  // Check if user is admin (this is a placeholder - you'd need to implement actual admin check)
-  getUserData().then(async currentUser => {
-    if (!currentUser || currentUser.email !== 'admin@care4paws.com') {
-      alert('You need admin rights to access this function.');
-      return;
-    }
-    
+  // Log to console instead of checking for admin
+  (async () => {
     try {
       const deviceId = getDeviceIdentifier();
       let usersData = localStorage.getItem('users');
@@ -221,43 +216,26 @@ function showAllUserPasswords() {
       }
       
       if (users.length === 0) {
-        alert('No users found in the system.');
+        console.log('No users found in the system.');
         return;
       }
       
-      // Create modal to display passwords
-      const modal = document.createElement('div');
-      modal.className = 'password-modal';
+      console.log('===== USER PREPARATION PASSWORDS =====');
+      console.table(users.map(user => ({
+        Username: user.username || 'No username',
+        Email: user.email,
+        'Preparation Password': user.prepPassword || 'Not generated'
+      })));
+      console.log('=======================================');
       
-      let passwordList = '<div class="password-list"><h3>User Preparation Passwords</h3><table>';
-      passwordList += '<tr><th>Username</th><th>Email</th><th>Preparation Password</th></tr>';
-      
-      users.forEach(user => {
-        const username = user.username || 'No username';
-        const prepPassword = user.prepPassword || 'Not generated';
-        passwordList += `<tr><td>${username}</td><td>${user.email}</td><td>${prepPassword}</td></tr>`;
-      });
-      
-      passwordList += '</table></div>';
-      
-      modal.innerHTML = `
-        <div class="password-modal-content">
-          ${passwordList}
-          <button id="close-modal">Close</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      document.getElementById('close-modal').addEventListener('click', function() {
-        modal.remove();
-      });
+      // Also show in UI for easy access
+      alert('User passwords printed to console. Press F12 to view.');
       
     } catch (e) {
       console.error('Error displaying passwords:', e);
-      alert('Error retrieving user data.');
+      alert('Error retrieving user data. Check console for details.');
     }
-  });
+  })();
 }
 
 // Initialize adoption button when DOM is loaded
