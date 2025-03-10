@@ -47,6 +47,7 @@ body {
   color: var(--text-color);
   overflow-x: hidden;
   width: 100%;
+  padding-top: 80px; /* Add padding to prevent content from hiding behind the fixed navbar */
 }
 
 body::before {
@@ -79,25 +80,16 @@ body::before {
   margin-bottom: 20px;
   border-radius: 0 0 10px 10px;
   box-shadow: 0 2px 10px var(--shadow-color);
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 100;
 }
 
 /* Special styling for login page, profile page and pet-lessons navigation */
-body:has(.login-container) .top-nav,
-body:has(.pet-lessons) .top-nav,
-body:has(.profile-section) .top-nav {
-  position: fixed;
-  top: 0;
-  margin-bottom: 0;
-  width: 100%;
-}
-
 body:has(.login-container) .container,
 body:has(.pet-lessons) .container,
 body:has(.profile-section) .container {
-  margin-top: 100px;
+  margin-top: 20px;
 }
 
 .nav-group {
