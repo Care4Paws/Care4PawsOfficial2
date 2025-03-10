@@ -1,4 +1,19 @@
 
+// Function to set the adoption form URL
+function setAdoptionFormUrl(url) {
+  const adoptionButton = document.getElementById('adoption-button');
+  if (adoptionButton) {
+    adoptionButton.onclick = function() {
+      window.location.href = url;
+    };
+  }
+}
+
+// You can call this function later with the Google Forms URL
+// Example: setAdoptionFormUrl('https://forms.google.com/your-form-url');
+
+
+
 // Toggle password visibility
 function togglePasswordVisibility(inputId) {
   const passwordInput = document.getElementById(inputId);
