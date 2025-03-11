@@ -51,10 +51,7 @@
       </ul>
     </div>
     
-    <!-- For admins only -->
-    <div style="margin-top: 50px; text-align: center;">
-      <button id="admin-view-passwords" style="display: none;">Εμφάνιση Κωδικών Χρηστών (Admin)</button>
-    </div>
+    <!-- Admin section removed -->
   </div>
   
   <script src="script.js"></script>
@@ -75,13 +72,7 @@
         return;
       }
       
-      // Show admin features if admin
-      if (currentUser.email === 'admin@care4paws.com' || 
-          currentUser.email === 'care4pawsneaionia@gmail.com') {
-        const adminButton = document.getElementById('admin-view-passwords');
-        adminButton.style.display = 'inline-block';
-        adminButton.addEventListener('click', showAllUserPasswords);
-      }
+      // Admin features removed
     });
   </script>
 </body>
