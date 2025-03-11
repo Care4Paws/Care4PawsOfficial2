@@ -55,8 +55,46 @@ function setupAdoptionButton() {
       document.body.appendChild(menu);
       
       // Handle option clicks
-      document.getElementById('pawrent-option').addEventListener('click', function() {
-        window.location.href = 'https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=sharing';
+      document.getElementById('pawrent-option').addEventListener('click', async function() {
+        // Check if user is logged in
+        const currentUser = await getUserData();
+        if (!currentUser) {
+          alert('Παρακαλώ συνδεθείτε πρώτα για να υποβάλετε φόρμα υιοθεσίας.');
+          window.location.href = 'login.html?redirect=index.html';
+          return;
+        }
+        
+        // Open Google Form with email prefilled and add custom message
+        const email = encodeURIComponent(currentUser.email);
+        const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=pp_url&entry.1234567890=${email}`;
+        
+        // Create a modal with instructions
+        const modal = document.createElement('div');
+        modal.className = 'email-verification-modal';
+        modal.innerHTML = `
+          <div class="modal-content">
+            <h3>Σημαντική Σημείωση</h3>
+            <p>Θα ανοίξει μια φόρμα Google με το email σας προσυμπληρωμένο: <strong>${currentUser.email}</strong></p>
+            <p>Παρακαλώ ΜΗΝ αλλάξετε αυτό το email στη φόρμα, καθώς πρέπει να ταιριάζει με τον λογαριασμό σας στο Care4Paws!</p>
+            <div class="modal-buttons">
+              <button id="cancel-form">Ακύρωση</button>
+              <button id="continue-form">Συνέχεια στη φόρμα</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Handle cancel
+        document.getElementById('cancel-form').addEventListener('click', function() {
+          modal.remove();
+        });
+        
+        // Handle continue to form
+        document.getElementById('continue-form').addEventListener('click', function() {
+          modal.remove();
+          window.open(formUrl, '_blank');
+        });
       });
       
       document.getElementById('prep-option').addEventListener('click', async function() {
