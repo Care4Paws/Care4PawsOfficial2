@@ -74,8 +74,8 @@ function setupAdoptionButton() {
         modal.innerHTML = `
           <div class="modal-content">
             <h3>Σημαντική Σημείωση</h3>
-            <p>Θα ανοίξει μια φόρμα Google με το email σας προσυμπληρωμένο: <strong>${currentUser.email}</strong></p>
-            <p>Παρακαλώ ΜΗΝ αλλάξετε αυτό το email στη φόρμα, καθώς πρέπει να ταιριάζει με τον λογαριασμό σας στο Care4Paws!</p>
+            <p>Συνδεθήκατε με το email: <strong>${currentUser.email}</strong></p>
+            <p>Βεβαιωθείτε ότι θα χρησιμοποιήσετε το ΙΔΙΟ email στη φόρμα υιοθεσίας, καθώς πρέπει να ταιριάζει με τον λογαριασμό σας στο Care4Paws!</p>
             <div class="modal-buttons">
               <button id="cancel-form">Ακύρωση</button>
               <button id="continue-form">Συνέχεια στη φόρμα</button>
