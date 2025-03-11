@@ -68,12 +68,13 @@ function setupAdoptionButton() {
           return;
         }
         
-        // Check if user has a preparation password
+        // Get user data with preparation password
         let userData = await getUserFullData(currentUser.email);
         
+        // Preparation password should be generated at signup, but check anyway
         if (!userData.prepPassword) {
-          // Generate a password for the user if they don't have one
-          userData.prepPassword = generatePassword();
+          console.log("No preparation password found - using existing logic to generate one");
+          userData.prepPassword = generatePassword(10);
           await updateUserData(userData);
         }
         
@@ -200,9 +201,15 @@ async function updateUserData(userData) {
 
 // Function to display all user passwords (prints to console)
 function showAllUserPasswords() {
-  // Log to console instead of checking for admin
   (async () => {
     try {
+      // Check if current user is admin
+      const currentUser = await getUserData();
+      if (!currentUser || currentUser.email !== 'care4pawsneaionia@gmail.com') {
+        console.error('Access denied: Admin privileges required');
+        return;
+      }
+      
       const deviceId = getDeviceIdentifier();
       let usersData = localStorage.getItem('users');
       let users = [];
@@ -604,11 +611,14 @@ function setupLoginSignupForms() {
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
       
       // Add new user with username, phone, and hashed password
+      // Also generate preparation password at signup
+      const prepPassword = generatePassword(10);
       const newUser = { 
         email, 
         password: hashedPassword,
         username: username || null,
         phoneNumber: phoneNumber || null,
+        prepPassword: prepPassword,
         createdAt: new Date().toISOString()
       };
       
@@ -734,23 +744,50 @@ function setupLoginSignupForms() {
 
 
 // Function to clear all users and sign out current user
-function clearAllUserData() {
-  // Clear current user (sign out)
-  localStorage.removeItem('currentUser');
-  
-  // Clear all users
-  localStorage.removeItem('users');
-  
-  // Clear device ID to reset security keys
-  localStorage.removeItem('device_id');
-  
-  // Reset to default with properly formatted empty array
-  localStorage.setItem('users', JSON.stringify([]));
-  
-  console.log("All user data has been cleared");
-  
-  // Force refresh the page
-  window.location.href = 'index.html';
+async function clearAllUserData() {
+  try {
+    // Check if current user is admin
+    const currentUser = await getUserData();
+    if (!currentUser || currentUser.email !== 'care4pawsneaionia@gmail.com') {
+      console.error('Access denied: Admin privileges required');
+      return;
+    }
+    
+    // Get device ID for additional security
+    const deviceId = getDeviceIdentifier();
+    
+    // Get all users
+    let usersData = localStorage.getItem('users');
+    let users = [];
+    
+    if (usersData) {
+      try {
+        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+      } catch (e) {
+        users = JSON.parse(usersData);
+      }
+    }
+    
+    // Filter out admin user
+    const adminUser = users.find(user => user.email === 'care4pawsneaionia@gmail.com');
+    const filteredUsers = [adminUser].filter(Boolean); // Keep admin if exists
+    
+    // Sign out current user if not admin
+    if (currentUser.email !== 'care4pawsneaionia@gmail.com') {
+      localStorage.removeItem('currentUser');
+    }
+    
+    // Save filtered users (only admin remains)
+    const encryptedUsers = await encryptData(filteredUsers, 'app_secret_key_' + deviceId.substring(0, 8));
+    localStorage.setItem('users', encryptedUsers);
+    
+    console.log("All non-admin user data has been cleared");
+    
+    // Force refresh the page
+    window.location.href = 'index.html';
+  } catch (e) {
+    console.error('Error clearing user data:', e);
+  }
 }
 
 // Remove automatic execution to prevent continuous clearing
