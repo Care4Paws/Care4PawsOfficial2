@@ -59,10 +59,25 @@
   
   <script src="script.js"></script>
   <script>
-    // Check if user is admin
+    // Check if user is authorized to access preparation page
     document.addEventListener('DOMContentLoaded', async function() {
       const currentUser = await getUserData();
-      if (currentUser && currentUser.email === 'admin@care4paws.com') {
+      if (!currentUser) {
+        // Redirect to login if not logged in
+        window.location.href = 'login.html?redirect=preparation.html';
+        return;
+      }
+      
+      const userData = await getUserFullData(currentUser.email);
+      if (!userData.prepVerified) {
+        // Redirect to home if not verified for preparation
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // Show admin features if admin
+      if (currentUser.email === 'admin@care4paws.com' || 
+          currentUser.email === 'care4pawsneaionia@gmail.com') {
         const adminButton = document.getElementById('admin-view-passwords');
         adminButton.style.display = 'inline-block';
         adminButton.addEventListener('click', showAllUserPasswords);

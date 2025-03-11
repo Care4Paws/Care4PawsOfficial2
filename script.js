@@ -132,7 +132,20 @@ function setupAdoptionButton() {
 }
 
 // Show password dialog for preparation access
-function showPasswordDialog() {
+async function showPasswordDialog() {
+  // Check if user has already verified for preparation access
+  const currentUser = await getUserData();
+  if (!currentUser) return;
+  
+  const userData = await getUserFullData(currentUser.email);
+  
+  // If the user has already verified, redirect directly
+  if (userData.prepVerified) {
+    window.location.href = 'preparation.html';
+    return;
+  }
+  
+  // Otherwise show password dialog
   const dialog = document.createElement('div');
   dialog.className = 'password-dialog';
   dialog.innerHTML = `
@@ -160,17 +173,13 @@ function showPasswordDialog() {
   // Handle submit
   document.getElementById('submit-prep').addEventListener('click', async function() {
     const passwordInput = document.getElementById('prep-password').value;
-    const currentUser = await getUserData();
-    
-    if (!currentUser) {
-      dialog.remove();
-      return;
-    }
-    
-    const userData = await getUserFullData(currentUser.email);
     
     if (passwordInput === userData.prepPassword) {
-      // Password is correct, redirect to preparation page
+      // Password is correct, mark as verified and save
+      userData.prepVerified = true;
+      await updateUserData(userData);
+      
+      // Redirect to preparation page
       dialog.remove();
       window.location.href = 'preparation.html';
     } else {
@@ -674,6 +683,7 @@ function setupLoginSignupForms() {
         username: username || null,
         phoneNumber: phoneNumber || null,
         prepPassword: prepPassword,
+        prepVerified: false, // Initially not verified for preparation access
         createdAt: new Date().toISOString()
       };
       
