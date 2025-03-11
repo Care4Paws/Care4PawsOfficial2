@@ -419,11 +419,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Add "Go Praw!" button
   const prawButton = document.createElement('button');
   prawButton.id = 'praw-button';
+  prawButton.className = 'praw-button';
   prawButton.textContent = 'Go Praw!';
   prawButton.addEventListener('click', showPrawModal);
 
   const themeToggleContainer = themeToggle.parentNode;
-  themeToggleContainer.insertBefore(prawButton, themeToggle.nextSibling);
+  themeToggleContainer.insertBefore(prawButton, themeToggle);
 
 
 });
