@@ -317,7 +317,18 @@ function togglePasswordVisibility(inputId) {
   }
 })();
 
+// Add lazy loading to images
+function lazyLoadImages() {
+  const images = document.querySelectorAll('img:not([loading])');
+  images.forEach(img => {
+    img.setAttribute('loading', 'lazy');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply lazy loading
+  lazyLoadImages();
+  
   // Dark mode functionality
   const themeToggle = document.getElementById('theme-toggle');
   
@@ -344,32 +355,33 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('theme', newTheme);
   });
 
-  // Smooth animation for page elements
-  const images = document.querySelectorAll('.main-image');
-  const textBlocks = document.querySelectorAll('.info-text');
-  
-  images.forEach(img => {
-    img.classList.remove('fade');
-  });
-  
-  textBlocks.forEach(block => {
-    block.classList.remove('fade');
-  });
-
-  // Add card hover effects
-  const cards = document.querySelectorAll('.faq-item, .trainer-card, .contact-card, .support-card');
-  
-  cards.forEach(card => {
-    card.addEventListener('mouseenter', () => {
-      card.style.transform = 'translateY(-8px)';
-      card.style.boxShadow = '0 15px 30px var(--shadow-color)';
+  // Defer non-critical animations
+  setTimeout(() => {
+    // Smooth animation for page elements
+    const images = document.querySelectorAll('.main-image');
+    const textBlocks = document.querySelectorAll('.info-text');
+    
+    images.forEach(img => {
+      img.classList.remove('fade');
     });
     
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'translateY(0)';
-      card.style.boxShadow = '0 5px 15px var(--shadow-color)';
+    textBlocks.forEach(block => {
+      block.classList.remove('fade');
     });
-  });
+
+    // Add card hover effects using CSS classes instead of inline styles
+    const cards = document.querySelectorAll('.faq-item, .trainer-card, .contact-card, .support-card');
+    
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.classList.add('card-hover');
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        card.classList.remove('card-hover');
+      });
+    });
+  }, 100); // Short delay to prioritize critical content
   
   // Authentication functionality
   setupAuthUI();
@@ -422,19 +434,24 @@ function getDeviceIdentifier() {
   return deviceId;
 }
 
+// Cache for encoder to avoid recreating it
+const textEncoder = new TextEncoder();
+
 // Encrypt data for storage
 async function encryptData(data, userKey) {
   try {
     // Convert the data to a string and then to bytes
-    const encoder = new TextEncoder();
-    const dataBytes = encoder.encode(JSON.stringify(data));
+    const dataBytes = textEncoder.encode(JSON.stringify(data));
     
     // Create a simple XOR cipher with the user key
-    const keyBytes = encoder.encode(userKey);
+    const keyBytes = textEncoder.encode(userKey);
     const encryptedBytes = new Uint8Array(dataBytes.length);
     
+    // Use keyLength for optimization (avoid recalculating in loop)
+    const keyLength = keyBytes.length;
+    
     for (let i = 0; i < dataBytes.length; i++) {
-      encryptedBytes[i] = dataBytes[i] ^ keyBytes[i % keyBytes.length];
+      encryptedBytes[i] = dataBytes[i] ^ keyBytes[i % keyLength];
     }
     
     // Convert encrypted bytes to base64 string for storage

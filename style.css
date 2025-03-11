@@ -30,7 +30,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  transition: background-color var(--transition-speed), color var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+/* Only apply transitions to specific properties that need them */
+.faq-item, .trainer-card, .contact-card, .support-card, .container, .nav-button,
+.auth-button, .login-signup-button, .theme-toggle, .user-menu button {
+  transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s, color 0.3s;
 }
 
 body {
@@ -642,6 +647,13 @@ p {
     margin-bottom: 10px;
     justify-content: center;
     width: 100%;
+
+/* Hover effect class instead of inline styles */
+.card-hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 15px 30px var(--shadow-color) !important;
+}
+
   }
 
   h1 {
