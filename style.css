@@ -263,6 +263,29 @@ p {
   transform: scale(1.02);
 }
 
+.video-container {
+  width: 100%;
+  margin: 30px 0;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  background-color: var(--card-bg);
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.video-container:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.video-title {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
 .info-text {
   margin-top: 40px;
   width: 100%;
