@@ -724,7 +724,7 @@ p {
 }
 
 .email-verification-modal .modal-content {
-  background-color: var(--background-color);
+  background-color: var(--card-bg);
   border-radius: 8px;
   padding: 24px;
   max-width: 500px;
@@ -735,13 +735,19 @@ p {
 
 .email-verification-modal h3 {
   margin-top: 0;
-  color: var(--text-color);
+  color: var(--primary-color);
 }
 
 .email-verification-modal p {
   margin: 16px 0;
   line-height: 1.5;
   color: var(--text-color);
+  font-weight: 500;
+}
+
+.email-verification-modal p strong {
+  color: var(--primary-color);
+  font-weight: 700;
 }
 
 .email-verification-modal .modal-buttons {
