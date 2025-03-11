@@ -599,6 +599,38 @@ async function updateUserMenu() {
   }
 }
 
+// Konami code implementation
+document.addEventListener('DOMContentLoaded', function() {
+  // Konami code sequence
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let konamiIndex = 0;
+  
+  // Listen for keydown events
+  document.addEventListener('keydown', function(e) {
+    // Get the key that was pressed
+    const key = e.key.toLowerCase();
+    const requiredKey = konamiCode[konamiIndex].toLowerCase();
+    
+    // Check if the key matches the current position in the konami sequence
+    if (key === requiredKey) {
+      // Move to the next key in the sequence
+      konamiIndex++;
+      
+      // If the entire sequence was entered correctly
+      if (konamiIndex === konamiCode.length) {
+        // Reset the index
+        konamiIndex = 0;
+        
+        // Redirect to Rick Roll
+        window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      }
+    } else {
+      // Reset if wrong key pressed
+      konamiIndex = 0;
+    }
+  });
+});
+
 // Setup login and signup forms
 function setupLoginSignupForms() {
   // Only run on login page
