@@ -1,3 +1,4 @@
+
 // Fix the viewport height on mobile
 function adjustViewportHeight() {
   const vh = window.innerHeight * 0.01;
@@ -29,7 +30,7 @@ function setupAdoptionButton() {
   if (adoptionButton) {
     adoptionButton.onclick = function(e) {
       e.preventDefault();
-
+      
       // Create the dropdown
       const menu = document.createElement('div');
       menu.className = 'adoption-dropdown';
@@ -37,22 +38,22 @@ function setupAdoptionButton() {
         <div class="adoption-option" id="pawrent-option">Ready to be a Pawrent?</div>
         <div class="adoption-option" id="prep-option">Προετοιμασία πριν την υιοθεσία</div>
       `;
-
+      
       // Position the dropdown
       const buttonRect = adoptionButton.getBoundingClientRect();
       menu.style.position = 'absolute';
       menu.style.top = `${buttonRect.bottom + window.scrollY}px`;
       menu.style.left = `${buttonRect.left + window.scrollX}px`;
-
+      
       // Remove any existing dropdown
       const existingDropdown = document.querySelector('.adoption-dropdown');
       if (existingDropdown) {
         existingDropdown.remove();
       }
-
+      
       // Add the dropdown to the page
       document.body.appendChild(menu);
-
+      
       // Handle option clicks
       document.getElementById('pawrent-option').addEventListener('click', async function() {
         // Check if user is logged in
@@ -62,11 +63,11 @@ function setupAdoptionButton() {
           window.location.href = 'login.html?redirect=index.html';
           return;
         }
-
+        
         // Open Google Form with email prefilled and add custom message
         const email = encodeURIComponent(currentUser.email);
         const formUrl = `https://docs.google.com/forms/d/e/1FAIpQLSe_mNbEEC2ecPZz60FB2bl6jJHhvVGVkFWyfAxeiwk1BoMOlw/viewform?usp=pp_url&entry.1234567890=${email}`;
-
+        
         // Create a modal with instructions
         const modal = document.createElement('div');
         modal.className = 'email-verification-modal';
@@ -81,21 +82,21 @@ function setupAdoptionButton() {
             </div>
           </div>
         `;
-
+        
         document.body.appendChild(modal);
-
+        
         // Handle cancel
         document.getElementById('cancel-form').addEventListener('click', function() {
           modal.remove();
         });
-
+        
         // Handle continue to form
         document.getElementById('continue-form').addEventListener('click', function() {
           modal.remove();
           window.open(formUrl, '_blank');
         });
       });
-
+      
       document.getElementById('prep-option').addEventListener('click', async function() {
         // Check if user is logged in
         const currentUser = await getUserData();
@@ -104,21 +105,21 @@ function setupAdoptionButton() {
           window.location.href = 'login.html?redirect=preparation.html';
           return;
         }
-
+        
         // Get user data with preparation password
         let userData = await getUserFullData(currentUser.email);
-
+        
         // Preparation password should be generated at signup, but check anyway
         if (!userData.prepPassword) {
           console.log("No preparation password found - using existing logic to generate one");
           userData.prepPassword = generatePassword(10);
           await updateUserData(userData);
         }
-
+        
         // Show password input dialog
         showPasswordDialog();
       });
-
+      
       // Close dropdown when clicking outside
       document.addEventListener('click', function closeDropdown(e) {
         if (!menu.contains(e.target) && e.target !== adoptionButton) {
@@ -135,15 +136,15 @@ async function showPasswordDialog() {
   // Check if user has already verified for preparation access
   const currentUser = await getUserData();
   if (!currentUser) return;
-
+  
   const userData = await getUserFullData(currentUser.email);
-
+  
   // If the user has already verified, redirect directly
   if (userData.prepVerified) {
     window.location.href = 'preparation.html';
     return;
   }
-
+  
   // Otherwise show password dialog
   const dialog = document.createElement('div');
   dialog.className = 'password-dialog';
@@ -161,23 +162,23 @@ async function showPasswordDialog() {
       </div>
     </div>
   `;
-
+  
   document.body.appendChild(dialog);
-
+  
   // Handle cancel
   document.getElementById('cancel-prep').addEventListener('click', function() {
     dialog.remove();
   });
-
+  
   // Handle submit
   document.getElementById('submit-prep').addEventListener('click', async function() {
     const passwordInput = document.getElementById('prep-password').value;
-
+    
     if (passwordInput === userData.prepPassword) {
       // Password is correct, mark as verified and save
       userData.prepVerified = true;
       await updateUserData(userData);
-
+      
       // Redirect to preparation page
       dialog.remove();
       window.location.href = 'preparation.html';
@@ -186,11 +187,11 @@ async function showPasswordDialog() {
       const errorElem = document.createElement('p');
       errorElem.className = 'error-message';
       errorElem.textContent = 'Λάθος κωδικός πρόσβασης';
-
+      
       const content = dialog.querySelector('.password-dialog-content');
       const existingError = content.querySelector('.error-message');
       if (existingError) existingError.remove();
-
+      
       content.appendChild(errorElem);
     }
   });
@@ -202,7 +203,7 @@ async function getUserFullData(email) {
     const deviceId = getDeviceIdentifier();
     let usersData = localStorage.getItem('users');
     let users = [];
-
+    
     if (usersData) {
       try {
         users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
@@ -210,7 +211,7 @@ async function getUserFullData(email) {
         users = JSON.parse(usersData);
       }
     }
-
+    
     return users.find(user => user.email === email) || null;
   } catch (e) {
     console.error('Error getting user data:', e);
@@ -224,7 +225,7 @@ async function updateUserData(userData) {
     const deviceId = getDeviceIdentifier();
     let usersData = localStorage.getItem('users');
     let users = [];
-
+    
     if (usersData) {
       try {
         users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
@@ -232,11 +233,11 @@ async function updateUserData(userData) {
         users = JSON.parse(usersData);
       }
     }
-
+    
     const userIndex = users.findIndex(user => user.email === userData.email);
     if (userIndex !== -1) {
       users[userIndex] = userData;
-
+      
       const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
       localStorage.setItem('users', encryptedUsers);
     }
@@ -255,11 +256,11 @@ function showAllUserPasswords() {
         console.error('Access denied: Admin privileges required');
         return;
       }
-
+      
       const deviceId = getDeviceIdentifier();
       let usersData = localStorage.getItem('users');
       let users = [];
-
+      
       if (usersData) {
         try {
           users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
@@ -267,12 +268,12 @@ function showAllUserPasswords() {
           users = JSON.parse(usersData);
         }
       }
-
+      
       if (users.length === 0) {
         console.log('No users found in the system.');
         return;
       }
-
+      
       console.log('===== USER PREPARATION PASSWORDS =====');
       console.table(users.map(user => ({
         Username: user.username || 'No username',
@@ -280,10 +281,10 @@ function showAllUserPasswords() {
         'Preparation Password': user.prepPassword || 'Not generated'
       })));
       console.log('=======================================');
-
+      
       // Also show in UI for easy access
       alert('User passwords printed to console. Press F12 to view.');
-
+      
     } catch (e) {
       console.error('Error displaying passwords:', e);
       alert('Error retrieving user data. Check console for details.');
@@ -300,7 +301,7 @@ document.addEventListener('DOMContentLoaded', setupAdoptionButton);
 function togglePasswordVisibility(inputId) {
   const passwordInput = document.getElementById(inputId);
   const toggleButton = passwordInput.nextElementSibling;
-
+  
   if (passwordInput.type === 'password') {
     passwordInput.type = 'text';
     toggleButton.textContent = '●';
@@ -314,11 +315,11 @@ function togglePasswordVisibility(inputId) {
 (function() {
   const isPetLessonsPage = window.location.pathname.includes('pet-lessons.html');
   const isProfilePage = window.location.pathname.includes('profile.html');
-
+  
   // Try to get user from localStorage
   const userData = localStorage.getItem('currentUser');
   const isLoggedIn = userData ? true : false;
-
+  
   if ((isPetLessonsPage || isProfilePage) && !isLoggedIn) {
     const currentPage = isPetLessonsPage ? 'pet-lessons.html' : 'profile.html';
     window.location.href = 'login.html?redirect=' + currentPage;
@@ -336,29 +337,29 @@ function lazyLoadImages() {
 document.addEventListener('DOMContentLoaded', () => {
   // Apply lazy loading
   lazyLoadImages();
-
+  
   // Dark mode functionality
   const themeToggle = document.getElementById('theme-toggle');
-
+  
   // Check for saved theme preference or use the system preference
   const savedTheme = localStorage.getItem('theme') || 
                      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
+  
   // Apply the initial theme
   document.documentElement.setAttribute('data-theme', savedTheme);
-
+  
   // Update the toggle button initial state
   if (savedTheme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
   } else {
     document.documentElement.setAttribute('data-theme', 'light');
   }
-
+  
   // Toggle theme when button is clicked
   themeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
+    
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
   });
@@ -368,67 +369,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Smooth animation for page elements
     const images = document.querySelectorAll('.main-image');
     const textBlocks = document.querySelectorAll('.info-text');
-
+    
     images.forEach(img => {
       img.classList.remove('fade');
     });
-
+    
     textBlocks.forEach(block => {
       block.classList.remove('fade');
     });
 
     // Add card hover effects using CSS classes instead of inline styles
     const cards = document.querySelectorAll('.faq-item, .trainer-card, .contact-card, .support-card');
-
+    
     cards.forEach(card => {
       card.addEventListener('mouseenter', () => {
         card.classList.add('card-hover');
       });
-
+      
       card.addEventListener('mouseleave', () => {
         card.classList.remove('card-hover');
       });
     });
   }, 100); // Short delay to prioritize critical content
-
+  
   // Authentication functionality
   setupAuthUI();
   setupLoginSignupForms();
-
+  
   // Re-enable page display if we're on pet lessons page and authorized
   const isPetLessonsPage = window.location.pathname.includes('pet-lessons.html');
   if (isPetLessonsPage) {
     document.documentElement.style.display = '';
   }
-
-  // Konami Code
-  let konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
-  let konamiIndex = 0;
-  document.addEventListener('keydown', (e) => {
-    if (e.keyCode === konamiCode[konamiIndex]) {
-      konamiIndex++;
-      if (konamiIndex === konamiCode.length) {
-        window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-        konamiIndex = 0; // Reset for next time
-      }
-    } else {
-      konamiIndex = 0; // Reset if code is broken
-    }
-  });
-
-  // Add "Go Praw!" button
-  const prawButton = document.createElement('button');
-  prawButton.id = 'praw-button';
-  prawButton.className = 'praw-button';
-  prawButton.textContent = 'Go Praw!';
-  prawButton.addEventListener('click', showPrawModal);
-
-  const themeToggleContainer = themeToggle.parentNode;
-  themeToggleContainer.insertBefore(prawButton, themeToggle);
-
-
 });
-
 
 // List of banned words for profanity filtering (English and Greek)
 const bannedWords = [
@@ -439,7 +412,7 @@ const bannedWords = [
 // Check for profanity in a string
 function containsProfanity(text) {
   if (!text) return false;
-
+  
   const lowerText = text.toLowerCase();
   return bannedWords.some(word => lowerText.includes(word));
 }
@@ -478,18 +451,18 @@ async function encryptData(data, userKey) {
   try {
     // Convert the data to a string and then to bytes
     const dataBytes = textEncoder.encode(JSON.stringify(data));
-
+    
     // Create a simple XOR cipher with the user key
     const keyBytes = textEncoder.encode(userKey);
     const encryptedBytes = new Uint8Array(dataBytes.length);
-
+    
     // Use keyLength for optimization (avoid recalculating in loop)
     const keyLength = keyBytes.length;
-
+    
     for (let i = 0; i < dataBytes.length; i++) {
       encryptedBytes[i] = dataBytes[i] ^ keyBytes[i % keyLength];
     }
-
+    
     // Convert encrypted bytes to base64 string for storage
     return btoa(String.fromCharCode.apply(null, encryptedBytes));
   } catch (e) {
@@ -503,16 +476,16 @@ async function decryptData(encryptedData, userKey) {
   try {
     // Convert base64 encoded string back to bytes
     const encryptedBytes = new Uint8Array(atob(encryptedData).split('').map(c => c.charCodeAt(0)));
-
+    
     // Create the same XOR cipher with the user key
     const encoder = new TextEncoder();
     const keyBytes = encoder.encode(userKey);
     const decryptedBytes = new Uint8Array(encryptedBytes.length);
-
+    
     for (let i = 0; i < encryptedBytes.length; i++) {
       decryptedBytes[i] = encryptedBytes[i] ^ keyBytes[i % keyBytes.length];
     }
-
+    
     // Convert decrypted bytes back to string and parse as JSON
     const decoder = new TextDecoder();
     return JSON.parse(decoder.decode(decryptedBytes));
@@ -532,14 +505,14 @@ async function decryptData(encryptedData, userKey) {
 function setupAuthUI() {
   const topNav = document.querySelector('.top-nav');
   if (!topNav) return;
-
+  
   // Create user menu element
   const userMenu = document.createElement('div');
   userMenu.className = 'user-menu';
-
+  
   // Insert at the beginning of top nav
   topNav.insertBefore(userMenu, topNav.firstChild);
-
+  
   // Update the user menu based on auth state
   updateUserMenu();
 }
@@ -548,15 +521,15 @@ async function getUserData() {
   try {
     const encryptedUser = localStorage.getItem('currentUser');
     if (!encryptedUser) return null;
-
+    
     // Get device identifier for additional security
     const deviceId = getDeviceIdentifier();
-
+    
     // Try to decrypt user data
     return await decryptData(encryptedUser, deviceId);
   } catch (e) {
     console.error('Error getting user data:', e);
-
+    
     // If there's an error with the encrypted data, try to fall back to old format
     try {
       const legacyUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -569,7 +542,7 @@ async function getUserData() {
     } catch (e2) {
       console.error('Legacy data error:', e2);
     }
-
+    
     return null;
   }
 }
@@ -577,18 +550,18 @@ async function getUserData() {
 async function updateUserMenu() {
   const userMenu = document.querySelector('.user-menu');
   if (!userMenu) return;
-
+  
   // Get current user from localStorage (decrypted)
   const currentUser = await getUserData();
-
+  
   // Clear existing content
   userMenu.innerHTML = '';
-
+  
   if (currentUser) {
     // User is logged in - show user info and logout button
     const displayName = currentUser.username || currentUser.email;
     const initial = displayName.charAt(0).toUpperCase();
-
+    
     userMenu.innerHTML = `
       <div class="user-info">
         <div class="user-icon">${initial}</div>
@@ -597,7 +570,7 @@ async function updateUserMenu() {
       <button id="profile-button" class="profile-button">Προφίλ</button>
       <button id="logout-button" class="logout-button">Αποσύνδεση</button>
     `;
-
+    
     // Add profile event listener
     document.getElementById('profile-button')?.addEventListener('click', () => {
       // If on profile page already, do nothing
@@ -606,7 +579,7 @@ async function updateUserMenu() {
       }
       window.location.href = 'profile.html';
     });
-
+    
     // Add logout event listener
     document.getElementById('logout-button').addEventListener('click', () => {
       localStorage.removeItem('currentUser');
@@ -630,52 +603,52 @@ async function updateUserMenu() {
 function setupLoginSignupForms() {
   // Only run on login page
   if (!document.getElementById('login-form')) return;
-
+  
   // Show signup form
   document.getElementById('show-signup')?.addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('signup-section').style.display = 'block';
   });
-
+  
   // Show login form
   document.getElementById('show-login')?.addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('signup-section').style.display = 'none';
     document.getElementById('login-section').style.display = 'block';
   });
-
+  
   // Handle signup form submission
   document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-
+    
     const email = document.getElementById('signup-email').value;
     const username = document.getElementById('signup-username').value;
     const phoneNumber = document.getElementById('signup-phone').value;
     const password = document.getElementById('signup-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     const errorElement = document.getElementById('signup-error');
-
+    
     // Check for profanity in username
     if (containsProfanity(username)) {
       errorElement.textContent = 'Το όνομα χρήστη περιέχει απαγορευμένες λέξεις';
       return;
     }
-
+    
     // Validate passwords match
     if (password !== confirmPassword) {
       errorElement.textContent = 'Οι κωδικοί πρόσβασης δεν ταιριάζουν';
       return;
     }
-
+    
     // Get device ID for additional security
     const deviceId = getDeviceIdentifier();
-
+    
     try {
       // Get existing users from localStorage
       let usersData = localStorage.getItem('users');
       let users = [];
-
+      
       if (usersData) {
         // Try to decrypt if it's encrypted
         try {
@@ -685,22 +658,22 @@ function setupLoginSignupForms() {
           users = JSON.parse(usersData);
         }
       }
-
+      
       // Check if email already exists
       if (users.some(user => user.email === email)) {
         errorElement.textContent = 'Το email είναι ήδη εγγεγραμμένο';
         return;
       }
-
+      
       // Check if username already exists
       if (username && users.some(user => user.username === username)) {
         errorElement.textContent = 'Το όνομα χρήστη υπάρχει ήδη';
         return;
       }
-
+      
       // Hash the password
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
-
+      
       // Add new user with username, phone, and hashed password
       // Also generate preparation password at signup
       const prepPassword = generatePassword(10);
@@ -713,13 +686,13 @@ function setupLoginSignupForms() {
         prepVerified: false, // Initially not verified for preparation access
         createdAt: new Date().toISOString()
       };
-
+      
       users.push(newUser);
-
+      
       // Encrypt and save users
       const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
       localStorage.setItem('users', encryptedUsers);
-
+      
       // Create session data for current user (without password)
       const currentUser = {
         email,
@@ -727,14 +700,14 @@ function setupLoginSignupForms() {
         phoneNumber: phoneNumber || null,
         sessionCreated: new Date().toISOString()
       };
-
+      
       // Encrypt and save current user session
       const encryptedCurrentUser = await encryptData(currentUser, deviceId);
       localStorage.setItem('currentUser', encryptedCurrentUser);
-
+      
       // Update UI and redirect
       updateUserMenu();
-
+      
       // Check if there's a redirect parameter
       const urlParams = new URLSearchParams(window.location.search);
       const redirectUrl = urlParams.get('redirect') || 'index.html';
@@ -744,23 +717,23 @@ function setupLoginSignupForms() {
       errorElement.textContent = 'Σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.';
     }
   });
-
+  
   // Handle login form submission
   document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-
+    
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const errorElement = document.getElementById('login-error');
-
+    
     // Get device ID for additional security
     const deviceId = getDeviceIdentifier();
-
+    
     try {
       // Get users from storage
       let usersData = localStorage.getItem('users');
       let users = [];
-
+      
       if (usersData) {
         // Try to decrypt if it's encrypted
         try {
@@ -770,19 +743,19 @@ function setupLoginSignupForms() {
           users = JSON.parse(usersData);
         }
       }
-
+      
       // Hash the provided password for comparison
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
-
+      
       // Find user with matching email
       const user = users.find(user => user.email === email);
-
+      
       // For legacy users without hashed passwords, check the old way
       const legacyAuthenticated = user && !user.password.startsWith('') && user.password === password;
-
+      
       // For users with hashed passwords, check the hash
       const modernAuthenticated = user && user.password === hashedPassword;
-
+      
       if (user && (legacyAuthenticated || modernAuthenticated)) {
         // If using legacy auth, update to modern hash
         if (legacyAuthenticated) {
@@ -791,7 +764,7 @@ function setupLoginSignupForms() {
           const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
           localStorage.setItem('users', encryptedUsers);
         }
-
+        
         // Login successful - create session data (without password)
         const currentUser = {
           email: user.email,
@@ -799,13 +772,13 @@ function setupLoginSignupForms() {
           phoneNumber: user.phoneNumber || null,
           sessionCreated: new Date().toISOString()
         };
-
+        
         // Encrypt and save current user
         const encryptedCurrentUser = await encryptData(currentUser, deviceId);
         localStorage.setItem('currentUser', encryptedCurrentUser);
-
+        
         await updateUserMenu();
-
+        
         // Check if there's a redirect parameter
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect') || 'index.html';
@@ -819,14 +792,14 @@ function setupLoginSignupForms() {
       errorElement.textContent = 'Σφάλμα κατά τη σύνδεση. Παρακαλώ δοκιμάστε ξανά.';
     }
   });
-
+  
   // Check if user is already logged in
   getUserData().then(currentUser => {
     if (currentUser) {
       // Check if there's a redirect parameter
       const urlParams = new URLSearchParams(window.location.search);
       const redirectUrl = urlParams.get('redirect') || 'index.html';
-
+      
       // Redirect to appropriate page if already logged in
       window.location.href = redirectUrl;
     }
@@ -844,14 +817,14 @@ async function clearAllUserData() {
       console.error('Access denied: Admin privileges required');
       return;
     }
-
+    
     // Get device ID for additional security
     const deviceId = getDeviceIdentifier();
-
+    
     // Get all users
     let usersData = localStorage.getItem('users');
     let users = [];
-
+    
     if (usersData) {
       try {
         users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
@@ -859,22 +832,22 @@ async function clearAllUserData() {
         users = JSON.parse(usersData);
       }
     }
-
+    
     // Filter out admin user
     const adminUser = users.find(user => user.email === 'care4pawsneaionia@gmail.com');
     const filteredUsers = [adminUser].filter(Boolean); // Keep admin if exists
-
+    
     // Sign out current user if not admin
     if (currentUser.email !== 'care4pawsneaionia@gmail.com') {
       localStorage.removeItem('currentUser');
     }
-
+    
     // Save filtered users (only admin remains)
     const encryptedUsers = await encryptData(filteredUsers, 'app_secret_key_' + deviceId.substring(0, 8));
     localStorage.setItem('users', encryptedUsers);
-
+    
     console.log("All non-admin user data has been cleared");
-
+    
     // Force refresh the page
     window.location.href = 'index.html';
   } catch (e) {
@@ -884,42 +857,3 @@ async function clearAllUserData() {
 
 // Remove automatic execution to prevent continuous clearing
 // clearAllUserData();
-
-function showPrawModal() {
-  const modal = document.createElement('div');
-  modal.className = 'praw-modal';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <h2>Praw Premium Subscription</h2>
-      <p>Unlock exclusive features with Praw!</p>
-      <button id="close-praw-modal">Close</button>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  document.getElementById('close-praw-modal').addEventListener('click', () => modal.remove());
-}
-
-// Pet Lessons Styles 
-.pet-lessons-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
-  margin-top: 30px;
-}
-
-.lesson-card {
-  background-color: var(--card-bg);
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 5px 15px var(--shadow-color);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.highlight-button {
-  position: relative;
-  background: linear-gradient(90deg, #ff7e5f, #feb47b);
-  color: white;
-  font-weight: 700;
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(255, 126, 95, 0.25);
-}
