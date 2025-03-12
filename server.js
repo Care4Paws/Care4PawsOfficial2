@@ -23,9 +23,26 @@ async function readDataFile(filePath) {
   try {
     await fs.access(filePath);
     const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
+    
+    // Handle empty files case
+    if (!data || data.trim() === '') {
+      console.log(`File ${filePath} is empty, initializing with empty array`);
+      await writeDataFile(filePath, []);
+      return [];
+    }
+    
+    try {
+      return JSON.parse(data);
+    } catch (parseError) {
+      console.error(`Error parsing JSON from ${filePath}:`, parseError);
+      // If JSON parsing fails, reset the file with empty array
+      await writeDataFile(filePath, []);
+      return [];
+    }
   } catch (error) {
     // If file doesn't exist or is invalid, return empty default value
+    console.log(`File ${filePath} doesn't exist or is inaccessible, initializing`);
+    await writeDataFile(filePath, []);
     return [];
   }
 }
@@ -142,8 +159,23 @@ app.post('/api/users/register', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
     
-    // Read existing users
-    const users = await readDataFile(USERS_FILE);
+    // Read existing users with better error handling
+    let users = [];
+    try {
+      users = await readDataFile(USERS_FILE);
+      // Ensure users is always an array
+      if (!Array.isArray(users)) {
+        console.error('Invalid users data format, initializing to empty array');
+        users = [];
+        // Reset the users file
+        await writeDataFile(USERS_FILE, []);
+      }
+    } catch (readError) {
+      console.error('Error reading users file:', readError);
+      users = [];
+      // Reset the users file
+      await writeDataFile(USERS_FILE, []);
+    }
     
     // Check if email already exists
     if (users.some(user => user.email === email)) {
