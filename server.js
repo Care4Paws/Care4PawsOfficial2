@@ -239,10 +239,15 @@ app.post('/api/send-verification-email', async (req, res) => {
     res.status(200).json({ success: true, message: 'Verification email sent' });
   } catch (error) {
     console.error('Error sending email:', error);
+    console.error('Email configuration:', {
+      user: process.env.EMAIL_USER,
+      passConfigured: process.env.EMAIL_PASS ? 'Yes (configured)' : 'No (missing)',
+      service: 'gmail'
+    });
     res.status(500).json({ 
       error: 'Server error', 
       message: error.message,
-      details: 'Failed to send verification email'
+      details: 'Failed to send verification email. Check server logs for more information.'
     });
   }
 });

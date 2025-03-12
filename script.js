@@ -405,7 +405,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // List of banned words for profanity filtering (English and Greek)
-const bannedWords = [
+// Using var instead of const to avoid redeclaration errors
+var bannedWords = [
   'nigga', 'bitch', 'fuck', 'shit', 'asshole', 'cunt', 'dick', 'pussy', 'whore',
   'μαλάκας', 'πούστης', 'καριόλης', 'γαμιέσαι', 'μουνί', 'αρχίδι', 'πουτάνα', 'γαμώτο'
 ];
@@ -823,9 +824,25 @@ function setupLoginSignupForms() {
           errorElement.textContent = 'Το email είναι ήδη εγγεγραμμένο';
           return;
         } else {
-          // If email exists but not verified, let them re-verify
-          errorElement.textContent = 'Υπάρχει λογαριασμός με αυτό το email που δεν έχει επιβεβαιωθεί.';
-          // Continue with verification process
+          // Remove the existing unverified account to let them start fresh
+          const userIndex = users.findIndex(user => user.email === email);
+          if (userIndex !== -1) {
+            users.splice(userIndex, 1);
+          }
+          
+          // Also clear any existing verification codes for this email
+          let verificationData = localStorage.getItem('verification_codes') || '{}';
+          let verificationCodes = {};
+          try {
+            verificationCodes = await decryptData(verificationData, 'verification_key_' + deviceId.substring(0, 8));
+            if (verificationCodes[email]) {
+              delete verificationCodes[email];
+              const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
+              localStorage.setItem('verification_codes', encryptedCodes);
+            }
+          } catch (e) {
+            console.error('Error clearing verification codes:', e);
+          }
         }
       }
       
