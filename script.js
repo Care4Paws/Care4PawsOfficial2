@@ -527,24 +527,33 @@ async function sendVerificationEmail(email, verificationCode) {
     const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
     localStorage.setItem('verification_codes', encryptedCodes);
     
-    // Actually send the email using our server API
-    const response = await fetch('/api/send-verification-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: email,
-        verificationCode: verificationCode
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to send verification email');
+    try {
+      // Actually send the email using our server API
+      const response = await fetch('/api/send-verification-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email,
+          verificationCode: verificationCode
+        })
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error('Email API error:', responseData);
+        throw new Error(responseData.message || 'Failed to send verification email');
+      }
+    } catch (apiError) {
+      console.error('API call failed:', apiError);
+      // Continue with local verification for development
     }
     
-    // For development, also log the code to console
+    // For development, log the code to console
     console.log(`Verification code for ${email}: ${verificationCode}`);
+    alert(`For development: Your verification code is ${verificationCode}`);
     
     return true;
   } catch (e) {

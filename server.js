@@ -174,10 +174,22 @@ app.put('/api/users/profile', async (req, res) => {
 
 // Configure the email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',  // Use your preferred email service
+  service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'your-email@gmail.com', // Replace with your email or use environment variable
-    pass: process.env.EMAIL_PASS || 'your-app-password'     // Replace with your app password or use environment variable
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+// Test that email transport is working
+transporter.verify(function(error, success) {
+  if (error) {
+    console.log('Email server error:', error);
+  } else {
+    console.log('Email server is ready to send messages');
   }
 });
 
@@ -240,4 +252,8 @@ ensureUsersFileExists();
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
+  console.log('API endpoints ready:');
+  console.log('- POST /api/send-verification-email');
+  console.log('- POST /api/users/register');
+  console.log('- POST /api/users/login');
 });
