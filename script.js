@@ -1196,42 +1196,19 @@ function setupLoginSignupForms() {
 // Function to clear all users and sign out current user
 async function clearAllUserData() {
   try {
-    // Check if current user is admin
-    const currentUser = await getUserData();
-    if (!currentUser || currentUser.email !== 'care4pawsneaionia@gmail.com') {
-      console.error('Access denied: Admin privileges required');
-      return;
-    }
-    
     // Get device ID for additional security
     const deviceId = getDeviceIdentifier();
     
-    // Get all users
-    let usersData = localStorage.getItem('users');
-    let users = [];
+    // Remove all users (including admin)
+    localStorage.setItem('users', await encryptData([], 'app_secret_key_' + deviceId.substring(0, 8)));
     
-    if (usersData) {
-      try {
-        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-      } catch (e) {
-        users = JSON.parse(usersData);
-      }
-    }
+    // Sign out current user
+    localStorage.removeItem('currentUser');
     
-    // Filter out admin user
-    const adminUser = users.find(user => user.email === 'care4pawsneaionia@gmail.com');
-    const filteredUsers = [adminUser].filter(Boolean); // Keep admin if exists
+    // Clear verification codes
+    localStorage.removeItem('verification_codes');
     
-    // Sign out current user if not admin
-    if (currentUser.email !== 'care4pawsneaionia@gmail.com') {
-      localStorage.removeItem('currentUser');
-    }
-    
-    // Save filtered users (only admin remains)
-    const encryptedUsers = await encryptData(filteredUsers, 'app_secret_key_' + deviceId.substring(0, 8));
-    localStorage.setItem('users', encryptedUsers);
-    
-    console.log("All non-admin user data has been cleared");
+    console.log("All user data has been cleared (including admin account)");
     
     // Force refresh the page
     window.location.href = 'index.html';
