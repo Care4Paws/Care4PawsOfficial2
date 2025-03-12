@@ -200,19 +200,23 @@ async function showPasswordDialog() {
 // Helper function to get full user data including password
 async function getUserFullData(email) {
   try {
-    const deviceId = getDeviceIdentifier();
-    let usersData = localStorage.getItem('users');
-    let users = [];
+    // Use server API to get user data
+    const response = await fetch('/api/users/full-data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email,
+        deviceId: getDeviceIdentifier().substring(0, 8)
+      })
+    });
     
-    if (usersData) {
-      try {
-        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-      } catch (e) {
-        users = JSON.parse(usersData);
-      }
+    if (!response.ok) {
+      return null;
     }
     
-    return users.find(user => user.email === email) || null;
+    return await response.json();
   } catch (e) {
     console.error('Error getting user data:', e);
     return null;
@@ -222,27 +226,22 @@ async function getUserFullData(email) {
 // Helper function to update user data
 async function updateUserData(userData) {
   try {
-    const deviceId = getDeviceIdentifier();
-    let usersData = localStorage.getItem('users');
-    let users = [];
+    // Use server API to update user data
+    const response = await fetch('/api/users/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userData,
+        deviceId: getDeviceIdentifier().substring(0, 8)
+      })
+    });
     
-    if (usersData) {
-      try {
-        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-      } catch (e) {
-        users = JSON.parse(usersData);
-      }
-    }
-    
-    const userIndex = users.findIndex(user => user.email === userData.email);
-    if (userIndex !== -1) {
-      users[userIndex] = userData;
-      
-      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
-      localStorage.setItem('users', encryptedUsers);
-    }
+    return response.ok;
   } catch (e) {
     console.error('Error updating user data:', e);
+    return false;
   }
 }
 
@@ -404,10 +403,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // List of banned words for profanity filtering (English and Greek)
-const bannedWords = [
-  'nigga', 'bitch', 'fuck', 'shit', 'asshole', 'cunt', 'dick', 'pussy', 'whore',
-  'μαλάκας', 'πούστης', 'καριόλης', 'γαμιέσαι', 'μουνί', 'αρχίδι', 'πουτάνα', 'γαμώτο'
-];
+// Make sure this is the only declaration of bannedWords in the file
+if (typeof bannedWords === 'undefined') {
+  var bannedWords = [
+    'nigga', 'bitch', 'fuck', 'shit', 'asshole', 'cunt', 'dick', 'pussy', 'whore',
+    'μαλάκας', 'πούστης', 'καριόλης', 'γαμιέσαι', 'μουνί', 'αρχίδι', 'πουτάνα', 'γαμώτο'
+  ];
+}
 
 // Check for profanity in a string
 function containsProfanity(text) {
@@ -677,53 +679,55 @@ function setupLoginSignupForms() {
     const deviceId = getDeviceIdentifier();
     
     try {
-      // Get existing users from localStorage
-      let usersData = localStorage.getItem('users');
-      let users = [];
+      // Check if email already exists using server API
+      const checkResponse = await fetch('/api/users/check-email?email=' + encodeURIComponent(email));
+      const checkResult = await checkResponse.json();
       
-      if (usersData) {
-        // Try to decrypt if it's encrypted
-        try {
-          users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-        } catch (e) {
-          // Fallback to JSON parse if decryption fails (for backward compatibility)
-          users = JSON.parse(usersData);
-        }
-      }
-      
-      // Check if email already exists
-      if (users.some(user => user.email === email)) {
+      if (checkResult.exists) {
         errorElement.textContent = 'Το email είναι ήδη εγγεγραμμένο';
         return;
       }
       
-      // Check if username already exists
-      if (username && users.some(user => user.username === username)) {
-        errorElement.textContent = 'Το όνομα χρήστη υπάρχει ήδη';
-        return;
+      // Check if username already exists (if provided)
+      if (username) {
+        const usernameResponse = await fetch('/api/users/check-username?username=' + encodeURIComponent(username));
+        const usernameResult = await usernameResponse.json();
+        
+        if (usernameResult.exists) {
+          errorElement.textContent = 'Το όνομα χρήστη υπάρχει ήδη';
+          return;
+        }
       }
       
       // Hash the password
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
       
-      // Add new user with username, phone, and hashed password
-      // Also generate preparation password at signup
+      // Generate preparation password at signup
       const prepPassword = generatePassword(10);
-      const newUser = { 
-        email, 
-        password: hashedPassword,
-        username: username || null,
-        phoneNumber: phoneNumber || null,
-        prepPassword: prepPassword,
-        prepVerified: false, // Initially not verified for preparation access
-        createdAt: new Date().toISOString()
-      };
       
-      users.push(newUser);
+      // Register user using server API
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password: hashedPassword,
+          username: username || null,
+          phoneNumber: phoneNumber || null,
+          prepPassword,
+          prepVerified: false,
+          deviceId: deviceId.substring(0, 8)
+        })
+      });
       
-      // Encrypt and save users
-      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
-      localStorage.setItem('users', encryptedUsers);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+      
+      const userData = await response.json();
       
       // Create session data for current user (without password)
       const currentUser = {
@@ -733,7 +737,7 @@ function setupLoginSignupForms() {
         sessionCreated: new Date().toISOString()
       };
       
-      // Encrypt and save current user session
+      // Encrypt and save current user session (localStorage is fine for the session)
       const encryptedCurrentUser = await encryptData(currentUser, deviceId);
       localStorage.setItem('currentUser', encryptedCurrentUser);
       
@@ -746,7 +750,7 @@ function setupLoginSignupForms() {
       window.location.href = redirectUrl;
     } catch (error) {
       console.error('Signup error:', error);
-      errorElement.textContent = 'Σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.';
+      errorElement.textContent = 'Σφάλμα κατά την εγγραφή: ' + error.message;
     }
   });
   
@@ -762,78 +766,83 @@ function setupLoginSignupForms() {
     const deviceId = getDeviceIdentifier();
     
     try {
-      // Get users from storage
-      let usersData = localStorage.getItem('users');
-      let users = [];
-      
-      if (usersData) {
-        // Try to decrypt if it's encrypted
-        try {
-          users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-        } catch (e) {
-          // Fallback to JSON parse if decryption fails (for backward compatibility)
-          users = JSON.parse(usersData);
-        }
-      }
-      
       // Hash the provided password for comparison
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
       
-      // Find user with matching email
-      const user = users.find(user => user.email === email);
+      // Login using server API
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password: hashedPassword,
+          deviceId: deviceId.substring(0, 8)
+        })
+      });
       
-      // For legacy users without hashed passwords, check the old way
-      const legacyAuthenticated = user && !user.password.startsWith('') && user.password === password;
-      
-      // For users with hashed passwords, check the hash
-      const modernAuthenticated = user && user.password === hashedPassword;
-      
-      if (user && (legacyAuthenticated || modernAuthenticated)) {
-        // If using legacy auth, update to modern hash
-        if (legacyAuthenticated) {
-          user.password = hashedPassword;
-          // Update users in storage
-          const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
-          localStorage.setItem('users', encryptedUsers);
-        }
-        
-        // Login successful - create session data (without password)
-        const currentUser = {
-          email: user.email,
-          username: user.username || null,
-          phoneNumber: user.phoneNumber || null,
-          sessionCreated: new Date().toISOString()
-        };
-        
-        // Encrypt and save current user
-        const encryptedCurrentUser = await encryptData(currentUser, deviceId);
-        localStorage.setItem('currentUser', encryptedCurrentUser);
-        
-        await updateUserMenu();
-        
-        // Check if there's a redirect parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect') || 'index.html';
-        window.location.href = redirectUrl;
-      } else {
-        // Login failed
-        errorElement.textContent = 'Λάθος email ή κωδικός πρόσβασης';
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
+      
+      const userData = await response.json();
+      
+      // Login successful - create session data (without password)
+      const currentUser = {
+        email: userData.email,
+        username: userData.username || null,
+        phoneNumber: userData.phoneNumber || null,
+        sessionCreated: new Date().toISOString()
+      };
+      
+      // Encrypt and save current user
+      const encryptedCurrentUser = await encryptData(currentUser, deviceId);
+      localStorage.setItem('currentUser', encryptedCurrentUser);
+      
+      await updateUserMenu();
+      
+      // Check if there's a redirect parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect') || 'index.html';
+      window.location.href = redirectUrl;
     } catch (error) {
       console.error('Login error:', error);
-      errorElement.textContent = 'Σφάλμα κατά τη σύνδεση. Παρακαλώ δοκιμάστε ξανά.';
+      errorElement.textContent = 'Λάθος email ή κωδικός πρόσβασης';
     }
   });
   
   // Check if user is already logged in
   getUserData().then(currentUser => {
     if (currentUser) {
-      // Check if there's a redirect parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectUrl = urlParams.get('redirect') || 'index.html';
-      
-      // Redirect to appropriate page if already logged in
-      window.location.href = redirectUrl;
+      // Verify the session is still valid with the server
+      fetch('/api/users/verify-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: currentUser.email,
+          deviceId: getDeviceIdentifier().substring(0, 8)
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          // Session is valid, check if there's a redirect parameter
+          const urlParams = new URLSearchParams(window.location.search);
+          const redirectUrl = urlParams.get('redirect') || 'index.html';
+          
+          // Redirect to appropriate page if already logged in
+          window.location.href = redirectUrl;
+        } else {
+          // Session is invalid, clear it
+          localStorage.removeItem('currentUser');
+        }
+      })
+      .catch(error => {
+        console.error('Session verification error:', error);
+      });
     }
   });
 }
@@ -850,35 +859,29 @@ async function clearAllUserData() {
       return;
     }
     
-    // Get device ID for additional security
-    const deviceId = getDeviceIdentifier();
+    // Use server API to clear all users
+    const response = await fetch('/api/admin/clear-users', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminEmail: currentUser.email,
+        deviceId: getDeviceIdentifier().substring(0, 8)
+      })
+    });
     
-    // Get all users
-    let usersData = localStorage.getItem('users');
-    let users = [];
-    
-    if (usersData) {
-      try {
-        users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
-      } catch (e) {
-        users = JSON.parse(usersData);
-      }
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to clear user data');
     }
-    
-    // Filter out admin user
-    const adminUser = users.find(user => user.email === 'care4pawsneaionia@gmail.com');
-    const filteredUsers = [adminUser].filter(Boolean); // Keep admin if exists
     
     // Sign out current user if not admin
     if (currentUser.email !== 'care4pawsneaionia@gmail.com') {
       localStorage.removeItem('currentUser');
     }
     
-    // Save filtered users (only admin remains)
-    const encryptedUsers = await encryptData(filteredUsers, 'app_secret_key_' + deviceId.substring(0, 8));
-    localStorage.setItem('users', encryptedUsers);
-    
-    console.log("All non-admin user data has been cleared");
+    console.log("All user data has been cleared (including admin account)");
     
     // Force refresh the page
     window.location.href = 'index.html';
