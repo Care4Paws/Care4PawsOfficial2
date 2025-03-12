@@ -505,9 +505,8 @@ async function decryptData(encryptedData, userKey) {
 // Email utilities
 // Function to send a verification email
 async function sendVerificationEmail(email, verificationCode) {
-  // In a real production environment, this would call a server-side API
-  // For now, we'll just simulate it with localStorage
   try {
+    // Store verification code in localStorage for verification later
     const deviceId = getDeviceIdentifier();
     let verificationData = localStorage.getItem('verification_codes') || '{}';
     let verificationCodes = {};
@@ -528,10 +527,25 @@ async function sendVerificationEmail(email, verificationCode) {
     const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
     localStorage.setItem('verification_codes', encryptedCodes);
     
-    // In a real app, you would actually send an email here
+    // Actually send the email using our server API
+    const response = await fetch('/api/send-verification-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        verificationCode: verificationCode
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to send verification email');
+    }
+    
+    // For development, also log the code to console
     console.log(`Verification code for ${email}: ${verificationCode}`);
     
-    // Simulate successful email sending
     return true;
   } catch (e) {
     console.error('Error sending verification email:', e);

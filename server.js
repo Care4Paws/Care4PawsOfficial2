@@ -1,9 +1,11 @@
 
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const nodemailer = require('nodemailer');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -167,6 +169,57 @@ app.put('/api/users/profile', async (req, res) => {
     res.json(userData);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Configure the email transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',  // Use your preferred email service
+  auth: {
+    user: process.env.EMAIL_USER || 'your-email@gmail.com', // Replace with your email or use environment variable
+    pass: process.env.EMAIL_PASS || 'your-app-password'     // Replace with your app password or use environment variable
+  }
+});
+
+// Send verification email API endpoint
+app.post('/api/send-verification-email', async (req, res) => {
+  try {
+    const { email, verificationCode } = req.body;
+    
+    if (!email || !verificationCode) {
+      return res.status(400).json({ error: 'Email and verification code are required' });
+    }
+    
+    // Send the email
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'your-email@gmail.com',
+      to: email,
+      subject: 'Care4Paws: Επιβεβαιώστε το email σας',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h2 style="color: #0097FB;">Επιβεβαίωση Email</h2>
+          <p>Ευχαριστούμε που εγγραφήκατε στο Care4Paws!</p>
+          <p>Παρακαλώ χρησιμοποιήστε τον παρακάτω κωδικό για να επιβεβαιώσετε το email σας:</p>
+          <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0;">
+            <h2 style="color: #0097FB; margin: 0; font-size: 24px;">${verificationCode}</h2>
+          </div>
+          <p>Ο κωδικός ισχύει για 30 λεπτά.</p>
+          <p>Αν δεν ζητήσατε εσείς αυτόν τον κωδικό, παρακαλώ αγνοήστε αυτό το email.</p>
+          <p style="margin-top: 30px; color: #777; font-size: 12px;">Με εκτίμηση,<br>Η ομάδα του Care4Paws</p>
+        </div>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.status(200).json({ success: true, message: 'Verification email sent' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ 
+      error: 'Server error', 
+      message: error.message,
+      details: 'Failed to send verification email'
+    });
   }
 });
 
