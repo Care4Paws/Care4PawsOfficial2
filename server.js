@@ -182,7 +182,15 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  debug: true // Enable debug logs
+  debug: true, // Enable debug logs
+  logger: true // Enable detailed logging
+});
+
+// Log the email configuration
+console.log('Email configuration:', {
+  user: process.env.EMAIL_USER,
+  passConfigured: process.env.EMAIL_PASS ? 'Password configured' : 'Password missing',
+  service: 'gmail'
 });
 
 // Test that email transport is working
