@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,6 +7,35 @@
   <title>Care4Paws | Σύνδεση / Εγγραφή</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
   <link href="style.css" rel="stylesheet" type="text/css" />
+  <style>
+    .success-message {
+      color: #2ecc71;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: 600;
+    }
+    
+    .verify-info {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .resend-link {
+      color: var(--primary-color);
+      text-decoration: underline;
+      cursor: pointer;
+      margin-top: 15px;
+      display: inline-block;
+    }
+    
+    .dialog-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <nav class="top-nav">
@@ -56,18 +86,38 @@
         </div>
         <div class="form-group password-field">
           <label for="signup-password">Κωδικός:</label>
-          <input type="password" id="signup-password" required>
+          <input type="password" id="signup-password" required minlength="8">
           <button type="button" class="password-toggle" onclick="togglePasswordVisibility('signup-password')">○</button>
         </div>
         <div class="form-group password-field">
           <label for="confirm-password">Επιβεβαίωση Κωδικού:</label>
-          <input type="password" id="confirm-password" required>
+          <input type="password" id="confirm-password" required minlength="8">
           <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirm-password')">○</button>
         </div>
         <button type="submit" class="auth-button">Εγγραφή</button>
       </form>
       <p class="auth-message">Έχετε ήδη λογαριασμό; <a href="#" id="show-login">Σύνδεση</a></p>
       <p id="signup-error" class="error-message"></p>
+    </div>
+    
+    <!-- New Email Verification Section -->
+    <div id="verify-section" class="auth-section" style="display: none;">
+      <h2>Επιβεβαίωση Email</h2>
+      <div class="verify-info">
+        <p>Ένας κωδικός επιβεβαίωσης έχει σταλθεί στο email:</p>
+        <p><strong id="verification-email"></strong></p>
+        <p>Παρακαλώ ελέγξτε τα εισερχόμενα και τον φάκελο ανεπιθύμητης αλληλογραφίας.</p>
+      </div>
+      <form id="verify-form">
+        <div class="form-group">
+          <label for="verification-code">Κωδικός Επιβεβαίωσης:</label>
+          <input type="text" id="verification-code" required maxlength="6" pattern="[0-9]*" inputmode="numeric">
+        </div>
+        <button type="submit" class="auth-button">Επιβεβαίωση</button>
+      </form>
+      <p><a id="resend-code" class="resend-link">Αποστολή νέου κωδικού επιβεβαίωσης</a></p>
+      <p class="auth-message">Επιστροφή στη <a href="#" id="show-login">Σύνδεση</a></p>
+      <p id="verify-error" class="error-message"></p>
     </div>
   </div>
   <script src="script.js"></script>

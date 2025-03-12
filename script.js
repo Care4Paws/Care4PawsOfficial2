@@ -11,8 +11,6 @@ adjustViewportHeight();
 // Call the function on resize
 window.addEventListener('resize', adjustViewportHeight);
 
-
-
 // Function to generate a random password
 function generatePassword(length = 8) {
   const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -22,6 +20,11 @@ function generatePassword(length = 8) {
     password += charset[randomIndex];
   }
   return password;
+}
+
+// Function to generate a verification code
+function generateVerificationCode(length = 6) {
+  return Math.floor(100000 + Math.random() * 900000).toString().substring(0, length);
 }
 
 // Function to handle adoption button click
@@ -295,8 +298,6 @@ function showAllUserPasswords() {
 // Initialize adoption button when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupAdoptionButton);
 
-
-
 // Toggle password visibility
 function togglePasswordVisibility(inputId) {
   const passwordInput = document.getElementById(inputId);
@@ -501,6 +502,92 @@ async function decryptData(encryptedData, userKey) {
   }
 }
 
+// Email utilities
+// Function to send a verification email
+async function sendVerificationEmail(email, verificationCode) {
+  // In a real production environment, this would call a server-side API
+  // For now, we'll just simulate it with localStorage
+  try {
+    const deviceId = getDeviceIdentifier();
+    let verificationData = localStorage.getItem('verification_codes') || '{}';
+    let verificationCodes = {};
+    
+    try {
+      verificationCodes = await decryptData(verificationData, 'verification_key_' + deviceId.substring(0, 8));
+    } catch (e) {
+      verificationCodes = JSON.parse(verificationData);
+    }
+    
+    // Store the verification code with expiration time (30 minutes)
+    verificationCodes[email] = {
+      code: verificationCode,
+      expires: Date.now() + (30 * 60 * 1000) // 30 minutes
+    };
+    
+    // Encrypt and save verification codes
+    const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
+    localStorage.setItem('verification_codes', encryptedCodes);
+    
+    // In a real app, you would actually send an email here
+    console.log(`Verification code for ${email}: ${verificationCode}`);
+    
+    // Simulate successful email sending
+    return true;
+  } catch (e) {
+    console.error('Error sending verification email:', e);
+    return false;
+  }
+}
+
+// Function to verify email verification code
+async function verifyEmailCode(email, code) {
+  try {
+    const deviceId = getDeviceIdentifier();
+    let verificationData = localStorage.getItem('verification_codes') || '{}';
+    let verificationCodes = {};
+    
+    try {
+      verificationCodes = await decryptData(verificationData, 'verification_key_' + deviceId.substring(0, 8));
+    } catch (e) {
+      verificationCodes = JSON.parse(verificationData);
+    }
+    
+    // Check if a verification code exists for the email
+    if (!verificationCodes[email]) {
+      return false;
+    }
+    
+    // Check if code has expired
+    if (verificationCodes[email].expires < Date.now()) {
+      // Remove expired code
+      delete verificationCodes[email];
+      
+      // Encrypt and save updated codes
+      const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
+      localStorage.setItem('verification_codes', encryptedCodes);
+      
+      return false;
+    }
+    
+    // Check if code matches
+    if (verificationCodes[email].code !== code) {
+      return false;
+    }
+    
+    // If code is valid, remove it from storage (single use)
+    delete verificationCodes[email];
+    
+    // Encrypt and save updated codes
+    const encryptedCodes = await encryptData(verificationCodes, 'verification_key_' + deviceId.substring(0, 8));
+    localStorage.setItem('verification_codes', encryptedCodes);
+    
+    return true;
+  } catch (e) {
+    console.error('Error verifying email code:', e);
+    return false;
+  }
+}
+
 // Handle user authentication state
 function setupAuthUI() {
   const topNav = document.querySelector('.top-nav');
@@ -631,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Setup login and signup forms
+// Setup login and signup forms with email verification
 function setupLoginSignupForms() {
   // Only run on login page
   if (!document.getElementById('login-form')) return;
@@ -641,16 +728,18 @@ function setupLoginSignupForms() {
     e.preventDefault();
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('signup-section').style.display = 'block';
+    document.getElementById('verify-section').style.display = 'none';
   });
   
   // Show login form
   document.getElementById('show-login')?.addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('signup-section').style.display = 'none';
+    document.getElementById('verify-section').style.display = 'none';
     document.getElementById('login-section').style.display = 'block';
   });
   
-  // Handle signup form submission
+  // Handle signup form submission - now with email verification
   document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -661,6 +750,19 @@ function setupLoginSignupForms() {
     const confirmPassword = document.getElementById('confirm-password').value;
     const errorElement = document.getElementById('signup-error');
     
+    // Basic validation
+    if (!email || !password) {
+      errorElement.textContent = 'Παρακαλώ συμπληρώστε όλα τα υποχρεωτικά πεδία';
+      return;
+    }
+    
+    // Check for valid email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      errorElement.textContent = 'Παρακαλώ εισάγετε έγκυρη διεύθυνση email';
+      return;
+    }
+    
     // Check for profanity in username
     if (containsProfanity(username)) {
       errorElement.textContent = 'Το όνομα χρήστη περιέχει απαγορευμένες λέξεις';
@@ -670,6 +772,12 @@ function setupLoginSignupForms() {
     // Validate passwords match
     if (password !== confirmPassword) {
       errorElement.textContent = 'Οι κωδικοί πρόσβασης δεν ταιριάζουν';
+      return;
+    }
+    
+    // Password strength requirements
+    if (password.length < 8) {
+      errorElement.textContent = 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες';
       return;
     }
     
@@ -692,61 +800,249 @@ function setupLoginSignupForms() {
       }
       
       // Check if email already exists
-      if (users.some(user => user.email === email)) {
-        errorElement.textContent = 'Το email είναι ήδη εγγεγραμμένο';
-        return;
+      const existingUser = users.find(user => user.email === email);
+      if (existingUser) {
+        if (existingUser.emailVerified) {
+          errorElement.textContent = 'Το email είναι ήδη εγγεγραμμένο';
+          return;
+        } else {
+          // If email exists but not verified, let them re-verify
+          errorElement.textContent = 'Υπάρχει λογαριασμός με αυτό το email που δεν έχει επιβεβαιωθεί.';
+          // Continue with verification process
+        }
       }
       
       // Check if username already exists
-      if (username && users.some(user => user.username === username)) {
+      if (username && users.some(user => user.username === username && user.email !== email)) {
         errorElement.textContent = 'Το όνομα χρήστη υπάρχει ήδη';
         return;
       }
       
+      // Generate verification code
+      const verificationCode = generateVerificationCode();
+      
       // Hash the password
       const hashedPassword = await hashPassword(password + email + deviceId.substring(0, 8));
       
-      // Add new user with username, phone, and hashed password
-      // Also generate preparation password at signup
-      const prepPassword = generatePassword(10);
+      // Create or update user object
       const newUser = { 
         email, 
         password: hashedPassword,
         username: username || null,
         phoneNumber: phoneNumber || null,
-        prepPassword: prepPassword,
-        prepVerified: false, // Initially not verified for preparation access
+        prepPassword: generatePassword(10),
+        prepVerified: false,
+        emailVerified: false, // Email not verified yet
+        verificationCode: verificationCode, // Store code temporarily
+        verificationExpires: Date.now() + (30 * 60 * 1000), // 30 minutes
         createdAt: new Date().toISOString()
       };
       
-      users.push(newUser);
+      // Add or update user in the array
+      const userIndex = users.findIndex(user => user.email === email);
+      if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...newUser };
+      } else {
+        users.push(newUser);
+      }
       
       // Encrypt and save users
       const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
       localStorage.setItem('users', encryptedUsers);
       
-      // Create session data for current user (without password)
-      const currentUser = {
-        email,
-        username: username || null,
-        phoneNumber: phoneNumber || null,
-        sessionCreated: new Date().toISOString()
-      };
+      // Send verification email (simulated)
+      const emailSent = await sendVerificationEmail(email, verificationCode);
       
-      // Encrypt and save current user session
-      const encryptedCurrentUser = await encryptData(currentUser, deviceId);
-      localStorage.setItem('currentUser', encryptedCurrentUser);
-      
-      // Update UI and redirect
-      updateUserMenu();
-      
-      // Check if there's a redirect parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirectUrl = urlParams.get('redirect') || 'index.html';
-      window.location.href = redirectUrl;
+      if (emailSent) {
+        // Store temp data for verification form
+        sessionStorage.setItem('verifying_email', email);
+        
+        // Show verification section
+        document.getElementById('signup-section').style.display = 'none';
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('verify-section').style.display = 'block';
+        
+        // Update verification info
+        document.getElementById('verification-email').textContent = email;
+      } else {
+        errorElement.textContent = 'Σφάλμα αποστολής email επιβεβαίωσης. Παρακαλώ δοκιμάστε ξανά.';
+      }
     } catch (error) {
       console.error('Signup error:', error);
       errorElement.textContent = 'Σφάλμα κατά την εγγραφή. Παρακαλώ δοκιμάστε ξανά.';
+    }
+  });
+  
+  // Handle verification form submission
+  document.getElementById('verify-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const email = sessionStorage.getItem('verifying_email');
+    const verificationCode = document.getElementById('verification-code').value;
+    const errorElement = document.getElementById('verify-error');
+    
+    if (!email) {
+      errorElement.textContent = 'Δεν βρέθηκε email προς επιβεβαίωση';
+      return;
+    }
+    
+    if (!verificationCode) {
+      errorElement.textContent = 'Παρακαλώ εισάγετε τον κωδικό επιβεβαίωσης';
+      return;
+    }
+    
+    try {
+      // Get device ID
+      const deviceId = getDeviceIdentifier();
+      
+      // Get users from localStorage
+      let usersData = localStorage.getItem('users');
+      let users = [];
+      
+      if (usersData) {
+        try {
+          users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+        } catch (e) {
+          users = JSON.parse(usersData);
+        }
+      }
+      
+      // Find user with email
+      const userIndex = users.findIndex(user => user.email === email);
+      if (userIndex === -1) {
+        errorElement.textContent = 'Δεν βρέθηκε χρήστης με αυτό το email';
+        return;
+      }
+      
+      const user = users[userIndex];
+      
+      // Check if verification has expired
+      if (user.verificationExpires < Date.now()) {
+        errorElement.textContent = 'Ο κωδικός επιβεβαίωσης έχει λήξει. Παρακαλώ εγγραφείτε ξανά.';
+        return;
+      }
+      
+      // Check verification code
+      if (user.verificationCode !== verificationCode) {
+        errorElement.textContent = 'Λάθος κωδικός επιβεβαίωσης';
+        return;
+      }
+      
+      // Update user as verified
+      user.emailVerified = true;
+      
+      // Remove verification data
+      delete user.verificationCode;
+      delete user.verificationExpires;
+      
+      // Update users array
+      users[userIndex] = user;
+      
+      // Save updated users
+      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
+      localStorage.setItem('users', encryptedUsers);
+      
+      // Create session for current user
+      const currentUser = {
+        email: user.email,
+        username: user.username || null,
+        phoneNumber: user.phoneNumber || null,
+        emailVerified: true,
+        sessionCreated: new Date().toISOString()
+      };
+      
+      // Encrypt and save current user
+      const encryptedCurrentUser = await encryptData(currentUser, deviceId);
+      localStorage.setItem('currentUser', encryptedCurrentUser);
+      
+      // Update UI
+      await updateUserMenu();
+      
+      // Clear verification session
+      sessionStorage.removeItem('verifying_email');
+      
+      // Get redirect URL if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect') || 'index.html';
+      
+      // Redirect to appropriate page
+      window.location.href = redirectUrl;
+      
+    } catch (error) {
+      console.error('Verification error:', error);
+      errorElement.textContent = 'Σφάλμα επιβεβαίωσης. Παρακαλώ δοκιμάστε ξανά.';
+    }
+  });
+  
+  // Handle resend verification code
+  document.getElementById('resend-code')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    const email = sessionStorage.getItem('verifying_email');
+    const errorElement = document.getElementById('verify-error');
+    
+    if (!email) {
+      errorElement.textContent = 'Δεν βρέθηκε email προς επιβεβαίωση';
+      return;
+    }
+    
+    try {
+      // Get device ID
+      const deviceId = getDeviceIdentifier();
+      
+      // Get users from localStorage
+      let usersData = localStorage.getItem('users');
+      let users = [];
+      
+      if (usersData) {
+        try {
+          users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+        } catch (e) {
+          users = JSON.parse(usersData);
+        }
+      }
+      
+      // Find user with email
+      const userIndex = users.findIndex(user => user.email === email);
+      if (userIndex === -1) {
+        errorElement.textContent = 'Δεν βρέθηκε χρήστης με αυτό το email';
+        return;
+      }
+      
+      // Generate new verification code
+      const verificationCode = generateVerificationCode();
+      
+      // Update user with new code
+      users[userIndex].verificationCode = verificationCode;
+      users[userIndex].verificationExpires = Date.now() + (30 * 60 * 1000); // 30 minutes
+      
+      // Save updated users
+      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
+      localStorage.setItem('users', encryptedUsers);
+      
+      // Send new verification email
+      const emailSent = await sendVerificationEmail(email, verificationCode);
+      
+      if (emailSent) {
+        // Show success message
+        errorElement.textContent = '';
+        const successElement = document.createElement('p');
+        successElement.className = 'success-message';
+        successElement.textContent = 'Ο νέος κωδικός επιβεβαίωσης στάλθηκε στο email σας';
+        
+        const form = document.getElementById('verify-form');
+        form.appendChild(successElement);
+        
+        // Remove success message after 5 seconds
+        setTimeout(() => {
+          successElement.remove();
+        }, 5000);
+      } else {
+        errorElement.textContent = 'Σφάλμα αποστολής email επιβεβαίωσης. Παρακαλώ δοκιμάστε ξανά.';
+      }
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      errorElement.textContent = 'Σφάλμα αποστολής. Παρακαλώ δοκιμάστε ξανά.';
     }
   });
   
@@ -757,6 +1053,12 @@ function setupLoginSignupForms() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     const errorElement = document.getElementById('login-error');
+    
+    // Simple validation
+    if (!email || !password) {
+      errorElement.textContent = 'Παρακαλώ συμπληρώστε όλα τα πεδία';
+      return;
+    }
     
     // Get device ID for additional security
     const deviceId = getDeviceIdentifier();
@@ -788,6 +1090,44 @@ function setupLoginSignupForms() {
       // For users with hashed passwords, check the hash
       const modernAuthenticated = user && user.password === hashedPassword;
       
+      if (!user) {
+        errorElement.textContent = 'Λάθος email ή κωδικός πρόσβασης';
+        return;
+      }
+      
+      // Check if email is verified
+      if (!user.emailVerified) {
+        // Store email for verification form
+        sessionStorage.setItem('verifying_email', email);
+        
+        // Generate new verification code
+        const verificationCode = generateVerificationCode();
+        
+        // Update user with new code
+        user.verificationCode = verificationCode;
+        user.verificationExpires = Date.now() + (30 * 60 * 1000); // 30 minutes
+        
+        // Update user in storage
+        const userIndex = users.findIndex(u => u.email === email);
+        users[userIndex] = user;
+        
+        // Save updated users
+        const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
+        localStorage.setItem('users', encryptedUsers);
+        
+        // Send verification email
+        await sendVerificationEmail(email, verificationCode);
+        
+        // Show verification section
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('signup-section').style.display = 'none';
+        document.getElementById('verify-section').style.display = 'block';
+        
+        // Update verification info
+        document.getElementById('verification-email').textContent = email;
+        return;
+      }
+      
       if (user && (legacyAuthenticated || modernAuthenticated)) {
         // If using legacy auth, update to modern hash
         if (legacyAuthenticated) {
@@ -802,6 +1142,7 @@ function setupLoginSignupForms() {
           email: user.email,
           username: user.username || null,
           phoneNumber: user.phoneNumber || null,
+          emailVerified: true,
           sessionCreated: new Date().toISOString()
         };
         
@@ -837,8 +1178,6 @@ function setupLoginSignupForms() {
     }
   });
 }
-
-
 
 // Function to clear all users and sign out current user
 async function clearAllUserData() {
@@ -886,6 +1225,3 @@ async function clearAllUserData() {
     console.error('Error clearing user data:', e);
   }
 }
-
-// Remove automatic execution to prevent continuous clearing
-// clearAllUserData();
