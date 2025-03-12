@@ -181,13 +181,16 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  debug: true // Enable debug logs
 });
 
 // Test that email transport is working
 transporter.verify(function(error, success) {
   if (error) {
     console.log('Email server error:', error);
+    console.log('Please check your .env file and ensure EMAIL_USER and EMAIL_PASS are set correctly.');
+    console.log('For Gmail, you need to use an app password: https://myaccount.google.com/apppasswords');
   } else {
     console.log('Email server is ready to send messages');
   }
@@ -202,9 +205,17 @@ app.post('/api/send-verification-email', async (req, res) => {
       return res.status(400).json({ error: 'Email and verification code are required' });
     }
     
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('Missing email credentials in .env file');
+      return res.status(500).json({ 
+        error: 'Server configuration error', 
+        message: 'Email service not properly configured'
+      });
+    }
+    
     // Send the email
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'your-email@gmail.com',
+      from: `"Care4Paws" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Care4Paws: Επιβεβαιώστε το email σας',
       html: `
@@ -222,7 +233,8 @@ app.post('/api/send-verification-email', async (req, res) => {
       `
     };
     
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully:', info.messageId);
     
     res.status(200).json({ success: true, message: 'Verification email sent' });
   } catch (error) {
