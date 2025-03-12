@@ -1,11 +1,9 @@
 
-require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
-const nodemailer = require('nodemailer');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -172,94 +170,6 @@ app.put('/api/users/profile', async (req, res) => {
   }
 });
 
-// Configure the email transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  debug: true, // Enable debug logs
-  logger: true // Enable detailed logging
-});
-
-// Log the email configuration
-console.log('Email configuration:', {
-  user: process.env.EMAIL_USER,
-  passConfigured: process.env.EMAIL_PASS ? 'Password configured' : 'Password missing',
-  service: 'gmail'
-});
-
-// Test that email transport is working
-transporter.verify(function(error, success) {
-  if (error) {
-    console.log('Email server error:', error);
-    console.log('Please check your .env file and ensure EMAIL_USER and EMAIL_PASS are set correctly.');
-    console.log('For Gmail, you need to use an app password: https://myaccount.google.com/apppasswords');
-  } else {
-    console.log('Email server is ready to send messages');
-  }
-});
-
-// Send verification email API endpoint
-app.post('/api/send-verification-email', async (req, res) => {
-  try {
-    const { email, verificationCode } = req.body;
-    
-    if (!email || !verificationCode) {
-      return res.status(400).json({ error: 'Email and verification code are required' });
-    }
-    
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('Missing email credentials in .env file');
-      return res.status(500).json({ 
-        error: 'Server configuration error', 
-        message: 'Email service not properly configured'
-      });
-    }
-    
-    // Send the email
-    const mailOptions = {
-      from: `"Care4Paws" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Care4Paws: Επιβεβαιώστε το email σας',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-          <h2 style="color: #0097FB;">Επιβεβαίωση Email</h2>
-          <p>Ευχαριστούμε που εγγραφήκατε στο Care4Paws!</p>
-          <p>Παρακαλώ χρησιμοποιήστε τον παρακάτω κωδικό για να επιβεβαιώσετε το email σας:</p>
-          <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; text-align: center; margin: 20px 0;">
-            <h2 style="color: #0097FB; margin: 0; font-size: 24px;">${verificationCode}</h2>
-          </div>
-          <p>Ο κωδικός ισχύει για 30 λεπτά.</p>
-          <p>Αν δεν ζητήσατε εσείς αυτόν τον κωδικό, παρακαλώ αγνοήστε αυτό το email.</p>
-          <p style="margin-top: 30px; color: #777; font-size: 12px;">Με εκτίμηση,<br>Η ομάδα του Care4Paws</p>
-        </div>
-      `
-    };
-    
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
-    
-    res.status(200).json({ success: true, message: 'Verification email sent' });
-  } catch (error) {
-    console.error('Error sending email:', error);
-    console.error('Email configuration:', {
-      user: process.env.EMAIL_USER,
-      passConfigured: process.env.EMAIL_PASS ? 'Yes (configured)' : 'No (missing)',
-      service: 'gmail'
-    });
-    res.status(500).json({ 
-      error: 'Server error', 
-      message: error.message,
-      details: 'Failed to send verification email. Check server logs for more information.'
-    });
-  }
-});
-
 // Start server
 // Create necessary users.json file if it doesn't exist
 async function ensureUsersFileExists() {
@@ -277,8 +187,4 @@ ensureUsersFileExists();
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
-  console.log('API endpoints ready:');
-  console.log('- POST /api/send-verification-email');
-  console.log('- POST /api/users/register');
-  console.log('- POST /api/users/login');
 });
