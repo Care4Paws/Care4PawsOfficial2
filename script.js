@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // List of banned words for profanity filtering (English and Greek)
 const bannedWords = [
   'nigga', 'bitch', 'fuck', 'shit', 'asshole', 'cunt', 'dick', 'pussy', 'whore',
-  'μαλάκας', 'πούστης', 'καριόλης', 'γαμιέσαι', 'μουνί', 'αρχίδι', 'πουτάνα', 'γαμώτο'
+  'μαλάκας', 'πούστης', 'καριόλης', 'γαμιέσαι', 'μουνί', 'αρχίδι', 'πουτάνα', 'γαμώτο','nigger','diddy','brainrot','k-pop','front man'
 ];
 
 // Check for profanity in a string
