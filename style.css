@@ -793,6 +793,131 @@ p {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Bonus Page Styles */
+.bonus-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.daily-paws-card, .leaderboard-card {
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.daily-paws-card:hover, .leaderboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.paws-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+  font-size: 1.1rem;
+}
+
+.paws-count, .streak-count, .next-reward, .time-remaining {
+  padding: 10px;
+  background-color: var(--hover-bg);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collect-paws-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 10px 0;
+  width: 100%;
+}
+
+.collect-paws-button:hover:not(.disabled) {
+  background-color: #45a049;
+}
+
+.collect-paws-button.disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.collect-message {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+/* Leaderboard Styles */
+.leaderboard-container {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.leaderboard-table th {
+  background-color: var(--hover-bg);
+  position: sticky;
+  top: 0;
+}
+
+.leaderboard-table tr:nth-child(even) {
+  background-color: var(--hover-bg);
+}
+
+.leaderboard-table tr:hover {
+  background-color: var(--hover-active);
+}
+
+.loading-message, .empty-message, .error-message {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-color);
+}
+
+.error-message {
+  color: #e74c3c;
+}
+
+.success-message {
+  color: #2ecc71;
+}
+
+@media (max-width: 600px) {
+  .paws-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .leaderboard-table th, .leaderboard-table td {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
 
 /* Social media icons styling */
 .contact-card a i {
