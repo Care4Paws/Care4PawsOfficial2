@@ -804,6 +804,19 @@ p {
   transform: scale(1.2);
 }
 
+.social-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 5px;
+  transition: transform 0.3s ease;
+}
+
+.contact-card a:hover .social-icon {
+  transform: scale(1.2);
+}
+
 .fa-instagram {
   color: #e1306c;
 }
