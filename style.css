@@ -792,34 +792,3 @@ p {
   transform: translateY(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-
-
-/* Social media icons styling */
-.contact-card a i {
-  margin-right: 8px;
-  transition: transform 0.3s ease;
-}
-
-.contact-card a:hover i {
-  transform: scale(1.2);
-}
-
-.fa-instagram {
-  color: #e1306c;
-}
-
-.fa-tiktok {
-  color: #000000;
-}
-
-.fa-envelope {
-  color: #D44638;
-}
-
-.fa-map-marker-alt {
-  color: #4285F4;
-}
-
-[data-theme="dark"] .fa-tiktok {
-  color: #ffffff;
-}
