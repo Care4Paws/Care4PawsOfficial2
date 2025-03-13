@@ -136,29 +136,24 @@ function checkCanCollect(lastCollected) {
   return now >= nextCollectionTime;
 }
 
-// Get next collection time (reset at midnight EET)
+// Get next collection time (reset after 24 hours from last collection)
 function getNextCollectionTime(lastCollected) {
   if (!lastCollected) return new Date();
   
   const lastDate = new Date(lastCollected);
   const now = new Date();
   
-  // Convert to EET/EEST time (UTC+2 or UTC+3 depending on DST)
-  const eetOffset = isDST(now) ? 3 : 2;
+  // Set next collection to be 24 hours after the last collection
+  const nextCollectionTime = new Date(lastDate);
+  nextCollectionTime.setHours(nextCollectionTime.getHours() + 24);
   
-  // Create midnight time in EET
-  const midnight = new Date();
-  midnight.setUTCHours(24 - eetOffset, 0, 0, 0);
-  
-  // If last collection was before midnight today, next collection is now
-  if (lastDate < midnight && midnight <= now) {
+  // If the next collection time has passed, user can collect now
+  if (now >= nextCollectionTime) {
     return now;
   }
   
-  // Otherwise, next collection is midnight tonight
-  const tomorrowMidnight = new Date(midnight);
-  tomorrowMidnight.setUTCDate(tomorrowMidnight.getUTCDate() + 1);
-  return tomorrowMidnight;
+  // Otherwise, return the exact time 24 hours after the last collection
+  return nextCollectionTime;
 }
 
 // Check if date is in Daylight Saving Time (simplified for Greece/EET)
