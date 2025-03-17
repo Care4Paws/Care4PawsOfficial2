@@ -31,13 +31,12 @@ let dinoGame = {
 
     // Load images
     this.dogImage = new Image();
-    this.dogImage.src = 'https://i.imgur.com/YSJRQfr.png'; // Dog sprite image
+    this.dogImage.src = 'https://imgur.com/a/rrDmz57'; // Dog image
 
     this.obstacleImage = new Image();
-    this.obstacleImage.src = 'https://i.imgur.com/TJ4Rjuv.png'; // Cat sprite for obstacles
+    this.obstacleImage.src = 'https://imgur.com/dIQLsEn'; // Obstacle image
 
-    this.backgroundImage = new Image();
-    this.backgroundImage.src = 'https://i.imgur.com/Evn1vAu.png'; // Simple grass background
+    // No background image needed - using white background
 
     // Add keyboard listeners
     document.addEventListener('keydown', (e) => {
@@ -86,7 +85,7 @@ let dinoGame = {
   jump: function() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.dogVelocity = -12;
+      this.dogVelocity = -8; // Reduced jump height
     }
   },
 
@@ -116,13 +115,15 @@ let dinoGame = {
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw background
-    this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+    // Fill white background
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Draw ground line
     this.ctx.beginPath();
     this.ctx.moveTo(0, this.groundY);
     this.ctx.lineTo(this.canvas.width, this.groundY);
+    this.ctx.strokeStyle = '#000000';
     this.ctx.stroke();
 
     // Update and draw dog
