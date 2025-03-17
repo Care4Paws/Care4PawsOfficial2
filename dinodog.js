@@ -126,8 +126,9 @@ let dinoGame = {
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Draw background
-    this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+    // Draw white background
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
     // Draw ground line
     this.ctx.beginPath();
