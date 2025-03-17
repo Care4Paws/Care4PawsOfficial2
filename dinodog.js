@@ -31,10 +31,10 @@ let dinoGame = {
 
     // Load images
     this.dogImage = new Image();
-    this.dogImage.src = 'https://imgur.com/a/rrDmz57'; // Dog image
+    this.dogImage.src = 'https://i.imgur.com/rrDmz57.gif'; // Dog image
 
     this.obstacleImage = new Image();
-    this.obstacleImage.src = 'https://imgur.com/dIQLsEn'; // Obstacle image
+    this.obstacleImage.src = 'https://i.imgur.com/dIQLsEn.png'; // Obstacle image
 
     // No background image needed - using white background
 
