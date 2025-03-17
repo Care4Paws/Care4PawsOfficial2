@@ -865,9 +865,12 @@ async function clearAllUserData() {
       }
     }
     
-    // Filter out admin user
+    // Reset admin's paws and keep admin account
     const adminUser = users.find(user => user.email === 'care4pawsneaionia@gmail.com');
-    const filteredUsers = [adminUser].filter(Boolean); // Keep admin if exists
+    if (adminUser) {
+      adminUser.paws = { count: 0, streak: 0, lastCollected: null };
+    }
+    const filteredUsers = [adminUser].filter(Boolean);
     
     // Sign out current user if not admin
     if (currentUser.email !== 'care4pawsneaionia@gmail.com') {

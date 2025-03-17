@@ -131,10 +131,55 @@ function checkCanCollect(lastCollected) {
   
   const now = new Date();
   const lastCollectionDate = new Date(lastCollected);
-  const nextCollectionTime = getNextCollectionTime(lastCollected);
+  
+  // Check if it's a new month
+  if (now.getMonth() !== lastCollectionDate.getMonth() || now.getFullYear() !== lastCollectionDate.getFullYear()) {
+    return true;
+  }
+  
+  const nextCollectionTime = new Date(lastCollectionDate);
+  nextCollectionTime.setHours(24, 0, 0, 0); // Next day at midnight
   
   return now >= nextCollectionTime;
 }
+
+// Monthly paw reset check
+async function checkMonthlyReset() {
+  const now = new Date();
+  const deviceId = getDeviceIdentifier();
+  
+  try {
+    let usersData = localStorage.getItem('users');
+    let users = [];
+    
+    if (usersData) {
+      users = await decryptData(usersData, 'app_secret_key_' + deviceId.substring(0, 8));
+    }
+    
+    let needsUpdate = false;
+    users.forEach(user => {
+      if (user.paws && user.paws.lastCollected) {
+        const lastCollection = new Date(user.paws.lastCollected);
+        if (now.getMonth() !== lastCollection.getMonth() || now.getFullYear() !== lastCollection.getFullYear()) {
+          user.paws = { count: 0, streak: 0, lastCollected: null };
+          needsUpdate = true;
+        }
+      }
+    });
+    
+    if (needsUpdate) {
+      const encryptedUsers = await encryptData(users, 'app_secret_key_' + deviceId.substring(0, 8));
+      localStorage.setItem('users', encryptedUsers);
+      updatePawsUI(userData.paws);
+      updateLeaderboard();
+    }
+  } catch (error) {
+    console.error('Error checking monthly reset:', error);
+  }
+}
+
+// Call monthly reset check when page loads
+document.addEventListener('DOMContentLoaded', checkMonthlyReset);
 
 // Get next collection time (reset at midnight Athens/Greece time)
 function getNextCollectionTime(lastCollected) {
