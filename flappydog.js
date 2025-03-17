@@ -30,16 +30,16 @@ let flappyGame = {
     
     // Load images
     this.dogImage = new Image();
-    this.dogImage.src = 'https://i.imgur.com/YSJRQfr.png'; // Dog sprite
+    this.dogImage.src = 'assets/dog.png'; // Dog sprite
     
     this.pipeTopImage = new Image();
-    this.pipeTopImage.src = 'https://i.imgur.com/TnF0v68.png'; // Pipe top
+    this.pipeTopImage.src = 'assets/pipe-top.png'; // Pipe top
     
     this.pipeBottomImage = new Image();
-    this.pipeBottomImage.src = 'https://i.imgur.com/gfG6Jx3.png'; // Pipe bottom
+    this.pipeBottomImage.src = 'assets/pipe-bottom.png'; // Pipe bottom
     
     this.backgroundImage = new Image();
-    this.backgroundImage.src = 'https://i.imgur.com/F9v71Bm.png'; // Sky background
+    this.backgroundImage.src = 'assets/background.png'; // Sky background
     
     // Add keyboard listeners
     document.addEventListener('keydown', (e) => {

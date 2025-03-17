@@ -32,13 +32,13 @@ let dinoGame = {
     
     // Load images
     this.dogImage = new Image();
-    this.dogImage.src = 'https://i.imgur.com/YSJRQfr.png'; // Dog sprite image
+    this.dogImage.src = 'assets/dog.png'; // Dog sprite image
     
     this.obstacleImage = new Image();
-    this.obstacleImage.src = 'https://i.imgur.com/TJ4Rjuv.png'; // Cat sprite for obstacles
+    this.obstacleImage.src = 'assets/cat.png'; // Cat sprite for obstacles
     
     this.backgroundImage = new Image();
-    this.backgroundImage.src = 'https://i.imgur.com/Evn1vAu.png'; // Simple grass background
+    this.backgroundImage.src = 'assets/ground.png'; // Simple grass background
     
     // Add keyboard listeners
     document.addEventListener('keydown', (e) => {
