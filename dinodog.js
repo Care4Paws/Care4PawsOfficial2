@@ -32,21 +32,30 @@ let dinoGame = {
     
     // Load images
     this.dogImage = new Image();
-    this.dogImage.src = 'https://i.imgur.com/YSJRQfr.png'; // Dog sprite image
+    this.dogImage.src = 'https://i.pinimg.com/originals/c5/ee/51/c5ee5152fd8575cd966fa258addca1a1.gif'; // Animated dog gif
     
     this.obstacleImage = new Image();
-    this.obstacleImage.src = 'https://i.imgur.com/TJ4Rjuv.png'; // Cat sprite for obstacles
+    this.obstacleImage.src = 'https://img.freepik.com/premium-vector/pixel-art-illustration-wooden-fence-pixelated-wooden-fence-farm-wooden-fence-pixelated-game_1038602-1171.jpg?w=900'; // Wooden fence obstacle
     
     this.backgroundImage = new Image();
     this.backgroundImage.src = 'https://i.imgur.com/Evn1vAu.png'; // Simple grass background
     
-    // Add keyboard listeners
+    // Add keyboard listeners for spacebar
     document.addEventListener('keydown', (e) => {
-      if ((e.code === 'Space' || e.code === 'ArrowUp') && !this.isJumping && !this.gameOver) {
+      if (e.code === 'Space' && !this.isJumping && !this.gameOver) {
         this.jump();
       }
       
       if (e.code === 'Enter' && this.gameOver) {
+        this.resetGame();
+      }
+    });
+    
+    // Add click listener for mouse
+    this.canvas.addEventListener('click', () => {
+      if (!this.isJumping && !this.gameOver) {
+        this.jump();
+      } else if (this.gameOver) {
         this.resetGame();
       }
     });
