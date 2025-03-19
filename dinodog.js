@@ -302,18 +302,6 @@ function initDinoGame() {
           return;
         }
         try {
-          // Fully reset game state to initial conditions
-          dinoGame.gameActive = false;
-          dinoGame.gameOver = false;
-          dinoGame.obstacles = [];
-          dinoGame.score = 0;
-          dinoGame.dogY = dinoGame.groundY - dinoGame.dogHeight;
-          dinoGame.dogVelocity = 0;
-          dinoGame.isJumping = false;
-          dinoGame.speed = 5;
-          dinoGame.currentDogFrame = 0;
-          dinoGame.frameCounter = 0;
-          
           const currentUser = await getUserData();
           location.reload();
           if (!currentUser) return;
