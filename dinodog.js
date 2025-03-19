@@ -314,8 +314,8 @@ function initDinoGame() {
           dinoGame.currentDogFrame = 0;
           dinoGame.frameCounter = 0;
           
-          collectPawsButton.dataset.collected = 'true';
           const currentUser = await getUserData();
+          location.reload();
           if (!currentUser) return;
 
           let userData = await getUserFullData(currentUser.email);
