@@ -6,7 +6,7 @@ let dinoGame = {
   dogVelocity: 0,
   obstacles: [],
   obstacleWidth: 80,
-  obstacleHeight: 160,
+  obstacleHeight: 140,
   groundY: 0,
   dogWidth: 100,
   dogHeight: 100,
@@ -140,7 +140,7 @@ let dinoGame = {
   jump: function() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.dogVelocity = -12;
+      this.dogVelocity = -14;
     }
   },
 
@@ -189,7 +189,7 @@ let dinoGame = {
     // Update and draw dog
     if (this.gameActive) {
       // Apply gravity
-      this.dogVelocity += 0.5 * deltaTime;
+      this.dogVelocity += 0.4 * deltaTime;
       this.dogY += this.dogVelocity * deltaTime;
 
       // Check ground collision
