@@ -5,11 +5,11 @@ let dinoGame = {
   dogY: 0,
   dogVelocity: 0,
   obstacles: [],
-  obstacleWidth: 100,
+  obstacleWidth: 120,
   obstacleHeight: 130,
   groundY: 0,
-  dogWidth: 100,
-  dogHeight: 100,
+  dogWidth: 120,
+  dogHeight: 90,
   originalCanvasWidth: 1000,
   originalCanvasHeight: 400,
   isJumping: false,
@@ -154,8 +154,7 @@ let dinoGame = {
     });
 
     if (this.gameActive && !this.gameOver) {
-      const delay = Math.max(1500 - (this.score * 50), 800);
-      setTimeout(() => this.addObstacle(), delay);
+      setTimeout(() => this.addObstacle(), 1500);
     }
   },
 
@@ -211,7 +210,7 @@ let dinoGame = {
 
     // First update and draw obstacles
     if (this.gameActive) {
-      const currentSpeed = this.speed + (this.score * 0.2);
+      const currentSpeed = this.speed + (this.score * 0.1);
 
       for (let i = 0; i < this.obstacles.length; i++) {
         const obstacle = this.obstacles[i];
