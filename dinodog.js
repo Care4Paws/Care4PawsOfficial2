@@ -1,4 +1,3 @@
-
 // Dog Dinosaur Game
 let dinoGame = {
   canvas: null,
@@ -27,10 +26,11 @@ let dinoGame = {
   init: function(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
-    
-    // Set canvas size
+
+    // Set canvas size and background
     this.canvas.width = this.originalCanvasWidth;
     this.canvas.height = this.originalCanvasHeight;
+    this.canvas.style.backgroundColor = '#ffffff';
 
     // Set ground position
     this.groundY = this.canvas.height - 20;
@@ -43,7 +43,7 @@ let dinoGame = {
       'https://imgur.com/HtDordr.png',
       'https://imgur.com/NLligu3.png'
     ];
-    
+
     this.dogImages = dogUrls.map(url => {
       const img = new Image();
       img.src = url;
@@ -88,7 +88,7 @@ let dinoGame = {
       if (document.fullscreenElement) {
         const screenRatio = window.innerWidth / window.innerHeight;
         const gameRatio = this.originalCanvasWidth / this.originalCanvasHeight;
-        
+
         if (screenRatio > gameRatio) {
           this.canvas.style.height = '100vh';
           this.canvas.style.width = 'auto';
@@ -215,7 +215,7 @@ let dinoGame = {
     // Update and draw obstacles
     if (this.gameActive) {
       const currentSpeed = this.speed + (this.score * 0.2);
-      
+
       for (let i = 0; i < this.obstacles.length; i++) {
         const obstacle = this.obstacles[i];
         obstacle.x -= currentSpeed * deltaTime;
@@ -324,7 +324,7 @@ function initDinoGame() {
           }
 
           updateLeaderboard();
-          
+
           // Reset the game
           dinoGame.resetGame();
         } catch (error) {
