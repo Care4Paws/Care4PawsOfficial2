@@ -161,12 +161,12 @@ let dinoGame = {
 
   checkCollision: function(dogX, dogY, obstacle) {
     // Adjust hitbox to be more forgiving
-    const hitboxPadding = 15;
+    const hitboxPadding = 20;
     const dogHitbox = {
       x: dogX + hitboxPadding,
-      y: dogY + hitboxPadding * 2.5,
-      width: this.dogWidth - (hitboxPadding * 2.5),
-      height: this.dogHeight - (hitboxPadding * 3.5)
+      y: dogY + hitboxPadding * 2.8,
+      width: this.dogWidth - (hitboxPadding * 3),
+      height: this.dogHeight - (hitboxPadding * 4)
     };
 
     return (
@@ -214,7 +214,12 @@ let dinoGame = {
       this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
     }
 
-    // Update and draw obstacles
+    // First draw dog
+    if (this.dogImages[this.isJumping ? 1 : this.currentDogFrame]) {
+      this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
+    }
+
+    // Then update and draw obstacles
     if (this.gameActive) {
       const currentSpeed = this.speed + (this.score * 0.2);
 
@@ -227,7 +232,7 @@ let dinoGame = {
           this.ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         }
 
-        // Check collision
+        // Check collision with smaller hitbox
         if (this.checkCollision(50, this.dogY, obstacle)) {
           this.gameOver = true;
           this.gameActive = false;
