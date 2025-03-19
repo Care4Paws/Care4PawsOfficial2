@@ -5,8 +5,8 @@ let dinoGame = {
   dogY: 0,
   dogVelocity: 0,
   obstacles: [],
-  obstacleWidth: 90,
-  obstacleHeight: 120,
+  obstacleWidth: 100,
+  obstacleHeight: 130,
   groundY: 0,
   dogWidth: 100,
   dogHeight: 100,
@@ -164,9 +164,9 @@ let dinoGame = {
     const hitboxPadding = 15;
     const dogHitbox = {
       x: dogX + hitboxPadding,
-      y: dogY + hitboxPadding * 1.5,
+      y: dogY + hitboxPadding * 2,
       width: this.dogWidth - (hitboxPadding * 2.5),
-      height: this.dogHeight - (hitboxPadding * 2.5)
+      height: this.dogHeight - (hitboxPadding * 3)
     };
 
     return (
