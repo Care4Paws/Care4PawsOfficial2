@@ -5,11 +5,13 @@ let dinoGame = {
   dogY: 0,
   dogVelocity: 0,
   obstacles: [],
-  obstacleWidth: 40,
-  obstacleHeight: 80,
+  obstacleWidth: 80,
+  obstacleHeight: 160,
   groundY: 0,
-  dogWidth: 80,
-  dogHeight: 80,
+  dogWidth: 100,
+  dogHeight: 100,
+  originalCanvasWidth: 1000,
+  originalCanvasHeight: 400,
   isJumping: false,
   gameOver: false,
   gameActive: false,
@@ -138,7 +140,7 @@ let dinoGame = {
   jump: function() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.dogVelocity = -15;
+      this.dogVelocity = -12;
     }
   },
 
@@ -207,9 +209,9 @@ let dinoGame = {
       }
     }
 
-    // Draw current dog frame
-    if (this.dogImages[this.currentDogFrame]) {
-      this.ctx.drawImage(this.dogImages[this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
+    // Draw current dog frame - use jumping image when in air
+    if (this.dogImages[this.isJumping ? 1 : this.currentDogFrame]) {
+      this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
     }
 
     // Update and draw obstacles
