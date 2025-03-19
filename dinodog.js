@@ -209,17 +209,7 @@ let dinoGame = {
       }
     }
 
-    // Draw current dog frame - use jumping image when in air
-    if (this.dogImages[this.isJumping ? 1 : this.currentDogFrame]) {
-      this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
-    }
-
-    // First draw dog
-    if (this.dogImages[this.isJumping ? 1 : this.currentDogFrame]) {
-      this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
-    }
-
-    // Then update and draw obstacles
+    // First update and draw obstacles
     if (this.gameActive) {
       const currentSpeed = this.speed + (this.score * 0.2);
 
@@ -247,6 +237,11 @@ let dinoGame = {
 
       // Remove obstacles that are off screen
       this.obstacles = this.obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+    }
+
+    // Draw dog on top of everything
+    if (this.dogImages[this.isJumping ? 1 : this.currentDogFrame]) {
+      this.ctx.drawImage(this.dogImages[this.isJumping ? 1 : this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
     }
 
     // Draw score
