@@ -23,7 +23,7 @@ let dinoGame = {
   currentDogFrame: 0,
   frameCounter: 0,
   originalCanvasWidth: 800,
-  originalCanvasHeight: 300,
+  originalCanvasHeight: 400,
 
   init: function(canvasId) {
     this.canvas = document.getElementById(canvasId);
@@ -160,13 +160,13 @@ let dinoGame = {
   },
 
   checkCollision: function(dogX, dogY, obstacle) {
-    // Adjust hitbox to be slightly smaller than visual size
-    const hitboxPadding = 10;
+    // Adjust hitbox to be more forgiving
+    const hitboxPadding = 15;
     const dogHitbox = {
       x: dogX + hitboxPadding,
-      y: dogY + hitboxPadding,
-      width: this.dogWidth - (hitboxPadding * 2),
-      height: this.dogHeight - (hitboxPadding * 2)
+      y: dogY + hitboxPadding * 1.5,
+      width: this.dogWidth - (hitboxPadding * 2.5),
+      height: this.dogHeight - (hitboxPadding * 2.5)
     };
 
     return (
