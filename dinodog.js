@@ -252,16 +252,17 @@ let dinoGame = {
     // Draw game state messages
     if (!this.gameActive && !this.gameOver) {
       this.ctx.fillStyle = '#000';
-      this.ctx.font = '24px Arial';
+      this.ctx.font = '32px Arial';
       this.ctx.textAlign = 'center';
       this.ctx.fillText('Press SPACE/UP ARROW or Click to start', this.canvas.width / 2, this.canvas.height / 2);
       this.ctx.textAlign = 'left';
     } else if (this.gameOver) {
       this.ctx.fillStyle = '#000';
-      this.ctx.font = '24px Arial';
+      this.ctx.font = '32px Arial';
       this.ctx.textAlign = 'center';
-      this.ctx.fillText('Game Over! Press ENTER or Click to restart', this.canvas.width / 2, this.canvas.height / 2);
-      this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 40);
+      this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2);
+      this.ctx.fillText('Collect your paws to restart', this.canvas.width / 2, this.canvas.height / 2 + 40);
+      this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 80);
       this.ctx.textAlign = 'left';
 
       // Show collect paws button if not already collected
@@ -303,6 +304,7 @@ function initDinoGame() {
         try {
           dinoGame.gameActive = false;
           dinoGame.gameOver = false;
+          dinoGame.score = 0;
           collectPawsButton.dataset.collected = 'true';
           const currentUser = await getUserData();
           if (!currentUser) return;
