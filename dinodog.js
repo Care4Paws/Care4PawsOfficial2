@@ -302,15 +302,17 @@ function initDinoGame() {
           return;
         }
         try {
-          // Fully reset game state
+          // Fully reset game state to initial conditions
           dinoGame.gameActive = false;
-          dinoGame.gameOver = true;
+          dinoGame.gameOver = false;
           dinoGame.obstacles = [];
           dinoGame.score = 0;
           dinoGame.dogY = dinoGame.groundY - dinoGame.dogHeight;
           dinoGame.dogVelocity = 0;
           dinoGame.isJumping = false;
           dinoGame.speed = 5;
+          dinoGame.currentDogFrame = 0;
+          dinoGame.frameCounter = 0;
           
           collectPawsButton.dataset.collected = 'true';
           const currentUser = await getUserData();
