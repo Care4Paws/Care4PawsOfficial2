@@ -164,9 +164,9 @@ let dinoGame = {
     const hitboxPadding = 15;
     const dogHitbox = {
       x: dogX + hitboxPadding,
-      y: dogY + hitboxPadding * 2,
+      y: dogY + hitboxPadding * 2.5,
       width: this.dogWidth - (hitboxPadding * 2.5),
-      height: this.dogHeight - (hitboxPadding * 3)
+      height: this.dogHeight - (hitboxPadding * 3.5)
     };
 
     return (
