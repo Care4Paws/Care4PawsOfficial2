@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,12 +21,12 @@
   </nav>
   <div class="container">
     <h1>Bonus Features</h1>
-    
+
     <div class="bonus-section">
       <div class="daily-paws-card">
         <h2>Daily Paws</h2>
         <p>Συλλέξτε πατουσάκια καθημερινά και ανεβείτε στην κατάταξη!</p>
-        
+
         <div class="paws-info">
           <div class="paws-count">
             <i class="fa fa-paw"></i> <span id="paws-count">0</span> Πατουσάκια
@@ -42,49 +41,32 @@
             <i class="fa fa-clock"></i> Επόμενη συλλογή: <span id="time-remaining">Φόρτωση...</span>
           </div>
         </div>
-        
+
         <button id="collect-paws" class="collect-paws-button">Συλλογή Paws</button>
         <p id="collect-message" class="collect-message"></p>
       </div>
-      
+
       <div class="game-card">
         <h2>DinoΠατουσάκι Game</h2>
         <p>Παίξτε το DinoΠατουσάκι και κερδίστε πατουσάκια! Πηδήξτε πάνω από τα εμπόδια!</p>
         <p><i class="fa fa-info-circle"></i> 1 πατουσάκι για κάθε 5 πόντους</p>
-        
+
         <div class="game-container">
-          <canvas id="dino-game-canvas" width="500" height="200"></canvas>
+          <canvas id="dino-game-canvas" width="800" height="200"></canvas>
           <button id="start-dino-game" class="game-button">Έναρξη Παιχνιδιού</button>
           <button id="collect-dino-paws" class="collect-game-paws-button" style="display: none;">Συλλογή Πατουσιών</button>
           <p id="dino-game-message" class="game-message" style="display: none;"></p>
         </div>
-        
+
         <div class="game-instructions">
           <h3>Οδηγίες:</h3>
-          <p><i class="fa fa-arrow-up"></i> ή <i class="fa fa-space-bar"></i> για άλμα</p>
+          <p><i class="fa fa-arrow-up"></i> ή <i class="fa fa-space-bar"></i> ή κλικ για άλμα</p>
           <p>Αποφύγετε τα εμπόδια και συλλέξτε όσο περισσότερους πόντους μπορείτε!</p>
+          <p>Το παιχνίδι γίνεται πιο γρήγορο όσο περισσότερους πόντους μαζεύετε!</p>
         </div>
       </div>
-      
-      <div class="game-card">
-        <h2>FlappyΠατουσάκι Game</h2>
-        <p>Παίξτε το FlappyΠατουσάκι και κερδίστε πατουσάκια! Πετάξτε ανάμεσα από τους σωλήνες!</p>
-        <p><i class="fa fa-info-circle"></i> 1 πατουσάκι για κάθε 3 πόντους</p>
-        
-        <div class="game-container">
-          <canvas id="flappy-game-canvas" width="500" height="300"></canvas>
-          <button id="start-flappy-game" class="game-button">Έναρξη Παιχνιδιού</button>
-          <button id="collect-flappy-paws" class="collect-game-paws-button" style="display: none;">Συλλογή Πατουσιών</button>
-          <p id="flappy-game-message" class="game-message" style="display: none;"></p>
-        </div>
-        
-        <div class="game-instructions">
-          <h3>Οδηγίες:</h3>
-          <p><i class="fa fa-arrow-up"></i> ή <i class="fa fa-space-bar"></i> για πέταγμα</p>
-          <p>Περάστε ανάμεσα από τους σωλήνες και συλλέξτε όσο περισσότερους πόντους μπορείτε!</p>
-        </div>
-      </div>
-      
+
+
       <div class="leaderboard-card">
         <h2>Πίνακας Κατάταξης</h2>
         <div class="leaderboard-container">
@@ -107,10 +89,9 @@
       </div>
     </div>
   </div>
-  
+
 <script src="script.js" defer></script>
 <script src="bonus.js" defer></script>
 <script src="dinodog.js" defer></script>
-<script src="flappydog.js" defer></script>
 </body>
 </html>

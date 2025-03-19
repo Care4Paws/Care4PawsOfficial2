@@ -1,3 +1,4 @@
+
 // Dog Dinosaur Game
 let dinoGame = {
   canvas: null,
@@ -5,56 +6,99 @@ let dinoGame = {
   dogY: 0,
   dogVelocity: 0,
   obstacles: [],
-  obstacleWidth: 20,
-  obstacleHeight: 40,
+  obstacleWidth: 40,
+  obstacleHeight: 80,
   groundY: 0,
-  dogWidth: 40,
-  dogHeight: 40,
+  dogWidth: 80,
+  dogHeight: 80,
   isJumping: false,
   gameOver: false,
   gameActive: false,
   score: 0,
   speed: 5,
   lastFrameTime: 0,
-  dogImage: null,
+  dogImages: [],
   obstacleImage: null,
-  groundImage: null,
-  backgroundImage: null,
+  currentDogFrame: 0,
+  frameCounter: 0,
+  originalCanvasWidth: 800,
+  originalCanvasHeight: 300,
 
   init: function(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext('2d');
+    
+    // Set canvas size
+    this.canvas.width = this.originalCanvasWidth;
+    this.canvas.height = this.originalCanvasHeight;
 
     // Set ground position
-    this.groundY = this.canvas.height - 50;
+    this.groundY = this.canvas.height - 20;
     this.dogY = this.groundY - this.dogHeight;
 
-    // Load images
-    this.dogImage = new Image();
-    this.dogImage.src = 'https://i.imgur.com/rrDmz57.gif'; // Dog image
+    // Load dog animation frames
+    const dogUrls = [
+      'https://imgur.com/bYOtROq.png',
+      'https://imgur.com/Ua7CWNQ.png',
+      'https://imgur.com/HtDordr.png',
+      'https://imgur.com/NLligu3.png'
+    ];
+    
+    this.dogImages = dogUrls.map(url => {
+      const img = new Image();
+      img.src = url;
+      return img;
+    });
 
+    // Load obstacle image
     this.obstacleImage = new Image();
-    this.obstacleImage.src = 'https://i.imgur.com/dIQLsEn.png'; // Obstacle image
-
-    // No background image needed - using white background
+    this.obstacleImage.src = 'https://imgur.com/mJ3kr4a.png';
 
     // Add keyboard listeners
     document.addEventListener('keydown', (e) => {
       if ((e.code === 'Space' || e.code === 'ArrowUp') && !this.isJumping && !this.gameOver) {
         this.jump();
       }
+    });
 
-      if (e.code === 'Enter' && this.gameOver) {
-        this.resetGame();
+    // Add click/touch listeners
+    this.canvas.addEventListener('click', () => {
+      if (!this.isJumping && !this.gameOver) {
+        this.jump();
       }
     });
 
-    // Add touch listeners for mobile
-    this.canvas.addEventListener('touchstart', () => {
-      if (!this.isJumping && !this.gameOver) {
-        this.jump();
-      } else if (this.gameOver) {
-        this.resetGame();
+    // Add fullscreen button
+    const fullscreenBtn = document.createElement('button');
+    fullscreenBtn.textContent = 'Πλήρης Οθόνη';
+    fullscreenBtn.className = 'game-button fullscreen-button';
+    fullscreenBtn.style.marginLeft = '10px';
+    this.canvas.parentElement.insertBefore(fullscreenBtn, this.canvas.nextSibling);
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        this.canvas.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Handle fullscreen changes
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        const screenRatio = window.innerWidth / window.innerHeight;
+        const gameRatio = this.originalCanvasWidth / this.originalCanvasHeight;
+        
+        if (screenRatio > gameRatio) {
+          this.canvas.style.height = '100vh';
+          this.canvas.style.width = 'auto';
+        } else {
+          this.canvas.style.width = '100vw';
+          this.canvas.style.height = 'auto';
+        }
+      } else {
+        this.canvas.style.width = '';
+        this.canvas.style.height = '';
       }
     });
 
@@ -80,12 +124,21 @@ let dinoGame = {
     this.gameActive = true;
     this.score = 0;
     this.speed = 5;
+    this.currentDogFrame = 0;
+    this.frameCounter = 0;
+
+    // Hide collect button
+    const collectPawsButton = document.getElementById('collect-dino-paws');
+    if (collectPawsButton) {
+      collectPawsButton.style.display = 'none';
+      collectPawsButton.dataset.collected = 'false';
+    }
   },
 
   jump: function() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.dogVelocity = -8; // Reduced jump height
+      this.dogVelocity = -15;
     }
   },
 
@@ -98,33 +151,38 @@ let dinoGame = {
       passed: false
     });
 
-    // Recursive call to add more obstacles
     if (this.gameActive && !this.gameOver) {
-      // Random time between 1.5 and 3 seconds
-      const randomDelay = Math.random() * 1500 + 1500;
-      setTimeout(() => this.addObstacle(), randomDelay);
+      const delay = Math.max(1500 - (this.score * 50), 800);
+      setTimeout(() => this.addObstacle(), delay);
     }
   },
 
+  checkCollision: function(dogX, dogY, obstacle) {
+    // Adjust hitbox to be slightly smaller than visual size
+    const hitboxPadding = 10;
+    const dogHitbox = {
+      x: dogX + hitboxPadding,
+      y: dogY + hitboxPadding,
+      width: this.dogWidth - (hitboxPadding * 2),
+      height: this.dogHeight - (hitboxPadding * 2)
+    };
+
+    return (
+      dogHitbox.x < obstacle.x + obstacle.width &&
+      dogHitbox.x + dogHitbox.width > obstacle.x &&
+      dogHitbox.y < obstacle.y + obstacle.height &&
+      dogHitbox.y + dogHitbox.height > obstacle.y
+    );
+  },
+
   gameLoop: function(timestamp) {
-    // Calculate delta time to ensure consistent game speed
+    // Calculate delta time
     if (!this.lastFrameTime) this.lastFrameTime = timestamp;
-    const deltaTime = (timestamp - this.lastFrameTime) / 16.67; // For 60fps
+    const deltaTime = (timestamp - this.lastFrameTime) / 16.67;
     this.lastFrameTime = timestamp;
 
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Fill white background
-    this.ctx.fillStyle = '#FFFFFF';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Draw ground line
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, this.groundY);
-    this.ctx.lineTo(this.canvas.width, this.groundY);
-    this.ctx.strokeStyle = '#000000';
-    this.ctx.stroke();
 
     // Update and draw dog
     if (this.gameActive) {
@@ -138,27 +196,37 @@ let dinoGame = {
         this.isJumping = false;
         this.dogVelocity = 0;
       }
+
+      // Animate dog
+      if (!this.isJumping) {
+        this.frameCounter++;
+        if (this.frameCounter >= 5) {
+          this.currentDogFrame = (this.currentDogFrame + 1) % 4;
+          this.frameCounter = 0;
+        }
+      }
     }
 
-    // Draw dog
-    this.ctx.drawImage(this.dogImage, 50, this.dogY, this.dogWidth, this.dogHeight);
+    // Draw current dog frame
+    if (this.dogImages[this.currentDogFrame]) {
+      this.ctx.drawImage(this.dogImages[this.currentDogFrame], 50, this.dogY, this.dogWidth, this.dogHeight);
+    }
 
     // Update and draw obstacles
     if (this.gameActive) {
+      const currentSpeed = this.speed + (this.score * 0.2);
+      
       for (let i = 0; i < this.obstacles.length; i++) {
         const obstacle = this.obstacles[i];
-        obstacle.x -= this.speed * deltaTime;
+        obstacle.x -= currentSpeed * deltaTime;
 
         // Draw obstacle
-        this.ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        if (this.obstacleImage) {
+          this.ctx.drawImage(this.obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
 
         // Check collision
-        if (
-          50 < obstacle.x + obstacle.width &&
-          50 + this.dogWidth > obstacle.x &&
-          this.dogY < obstacle.y + obstacle.height &&
-          this.dogY + this.dogHeight > obstacle.y
-        ) {
+        if (this.checkCollision(50, this.dogY, obstacle)) {
           this.gameOver = true;
           this.gameActive = false;
         }
@@ -167,11 +235,6 @@ let dinoGame = {
         if (!obstacle.passed && obstacle.x + obstacle.width < 50) {
           obstacle.passed = true;
           this.score++;
-
-          // Increase speed slightly every 5 points
-          if (this.score % 5 === 0) {
-            this.speed += 0.5;
-          }
         }
       }
 
@@ -181,27 +244,27 @@ let dinoGame = {
 
     // Draw score
     this.ctx.fillStyle = '#000';
-    this.ctx.font = '16px Arial';
-    this.ctx.fillText(`Score: ${this.score}`, 10, 25);
+    this.ctx.font = '20px Arial';
+    this.ctx.fillText(`Score: ${this.score}`, 10, 30);
 
-    // Draw start or game over text
+    // Draw game state messages
     if (!this.gameActive && !this.gameOver) {
       this.ctx.fillStyle = '#000';
-      this.ctx.font = '20px Arial';
+      this.ctx.font = '24px Arial';
       this.ctx.textAlign = 'center';
-      this.ctx.fillText('Press SPACE or tap to start', this.canvas.width / 2, this.canvas.height / 2);
+      this.ctx.fillText('Press SPACE/UP ARROW or Click to start', this.canvas.width / 2, this.canvas.height / 2);
       this.ctx.textAlign = 'left';
     } else if (this.gameOver) {
       this.ctx.fillStyle = '#000';
-      this.ctx.font = '20px Arial';
+      this.ctx.font = '24px Arial';
       this.ctx.textAlign = 'center';
-      this.ctx.fillText('Game Over! Press ENTER or tap to restart', this.canvas.width / 2, this.canvas.height / 2);
-      this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 30);
+      this.ctx.fillText('Game Over! Press ENTER or Click to restart', this.canvas.width / 2, this.canvas.height / 2);
+      this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 40);
       this.ctx.textAlign = 'left';
 
-      // Show collect paws button
+      // Show collect paws button if not already collected
       const collectPawsButton = document.getElementById('collect-dino-paws');
-      if (collectPawsButton) {
+      if (collectPawsButton && collectPawsButton.dataset.collected !== 'true') {
         collectPawsButton.style.display = 'block';
         collectPawsButton.dataset.score = this.score;
       }
@@ -213,11 +276,9 @@ let dinoGame = {
 };
 
 function initDinoGame() {
-  // Only initialize if we're on the bonus page
   if (document.getElementById('dino-game-canvas')) {
     dinoGame.init('dino-game-canvas');
 
-    // Add click listener to start game button
     const startButton = document.getElementById('start-dino-game');
     if (startButton) {
       startButton.addEventListener('click', () => {
@@ -226,7 +287,6 @@ function initDinoGame() {
       });
     }
 
-    // Handle paw collection
     const collectPawsButton = document.getElementById('collect-dino-paws');
     if (collectPawsButton) {
       collectPawsButton.addEventListener('click', async () => {
@@ -235,14 +295,11 @@ function initDinoGame() {
         }
         try {
           collectPawsButton.dataset.collected = 'true';
-          // Get current user data
           const currentUser = await getUserData();
           if (!currentUser) return;
 
-          // Get full user data
           let userData = await getUserFullData(currentUser.email);
 
-          // Update paws count
           if (!userData.paws) {
             userData.paws = {
               count: 0,
@@ -251,15 +308,13 @@ function initDinoGame() {
             };
           }
 
+          const pawsToAward = Math.floor(parseInt(collectPawsButton.dataset.score) / 5);
           userData.paws.count += pawsToAward;
 
-          // Save updated data
           await updateUserData(userData);
 
-          // Update UI
           document.getElementById('paws-count').textContent = userData.paws.count;
 
-          // Hide button and show message
           collectPawsButton.style.display = 'none';
 
           const messageElement = document.getElementById('dino-game-message');
@@ -268,8 +323,10 @@ function initDinoGame() {
             messageElement.style.display = 'block';
           }
 
-          // Update leaderboard
           updateLeaderboard();
+          
+          // Reset the game
+          dinoGame.resetGame();
         } catch (error) {
           console.error('Error awarding paws:', error);
         }
@@ -278,5 +335,4 @@ function initDinoGame() {
   }
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initDinoGame);
