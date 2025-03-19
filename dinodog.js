@@ -5,8 +5,8 @@ let dinoGame = {
   dogY: 0,
   dogVelocity: 0,
   obstacles: [],
-  obstacleWidth: 80,
-  obstacleHeight: 140,
+  obstacleWidth: 90,
+  obstacleHeight: 120,
   groundY: 0,
   dogWidth: 100,
   dogHeight: 100,
@@ -140,7 +140,7 @@ let dinoGame = {
   jump: function() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.dogVelocity = -14;
+      this.dogVelocity = -12;
     }
   },
 
@@ -302,9 +302,6 @@ function initDinoGame() {
           return;
         }
         try {
-          dinoGame.gameActive = false;
-          dinoGame.gameOver = false;
-          dinoGame.score = 0;
           collectPawsButton.dataset.collected = 'true';
           const currentUser = await getUserData();
           if (!currentUser) return;
