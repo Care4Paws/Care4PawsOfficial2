@@ -279,13 +279,18 @@ function initDinoGame() {
   if (document.getElementById('dino-game-canvas')) {
     dinoGame.init('dino-game-canvas');
 
-    const startButton = document.getElementById('start-dino-game');
-    if (startButton) {
-      startButton.addEventListener('click', () => {
+    // Start game on space/up/click
+    document.addEventListener('keydown', (e) => {
+      if ((e.code === 'Space' || e.code === 'ArrowUp') && !dinoGame.gameActive && !dinoGame.gameOver) {
         dinoGame.startGame();
-        startButton.style.display = 'none';
-      });
-    }
+      }
+    });
+
+    dinoGame.canvas.addEventListener('click', () => {
+      if (!dinoGame.gameActive && !dinoGame.gameOver) {
+        dinoGame.startGame();
+      }
+    });
 
     const collectPawsButton = document.getElementById('collect-dino-paws');
     if (collectPawsButton) {
@@ -294,6 +299,8 @@ function initDinoGame() {
           return;
         }
         try {
+          dinoGame.gameActive = false;
+          dinoGame.gameOver = false;
           collectPawsButton.dataset.collected = 'true';
           const currentUser = await getUserData();
           if (!currentUser) return;
