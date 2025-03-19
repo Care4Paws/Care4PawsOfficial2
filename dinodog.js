@@ -303,6 +303,10 @@ function initDinoGame() {
         }
         try {
           collectPawsButton.dataset.collected = 'true';
+          dinoGame.gameActive = false;
+          dinoGame.gameOver = false;
+          dinoGame.score = 0;
+          dinoGame.obstacles = [];
           const currentUser = await getUserData();
           if (!currentUser) return;
 
