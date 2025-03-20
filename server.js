@@ -1,104 +1,45 @@
-
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const fs = require('fs').promises;
-const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('./'));
 
-// Data file path
-const USERS_FILE = path.join(__dirname, 'users.json');
+// Initialize SQLite database
+const db = new sqlite3.Database(':memory:');
 
-// Helper to read users from file
-async function readUsers() {
-  try {
-    const data = await fs.readFile(USERS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    // If file doesn't exist or is invalid, return empty array
-    return [];
-  }
-}
-
-// Helper to write users to file
-async function writeUsers(users) {
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), 'utf8');
-}
-
-// Get all users (admin endpoint)
-app.get('/api/admin/users', async (req, res) => {
-  try {
-    const users = await readUsers();
-    
-    // Remove sensitive data
-    const safeUsers = users.map(user => {
-      const { password, ...safeUser } = user;
-      return safeUser;
-    });
-    
-    res.json(safeUsers);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
+// Create users table
+db.serialize(() => {
+  db.run("CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, username TEXT, password TEXT, phoneNumber TEXT, createdAt TEXT, paw_points INTEGER DEFAULT 0)");
 });
 
-// Get user by email (admin endpoint)
-app.get('/api/users/profile/:email', async (req, res) => {
-  try {
-    const users = await readUsers();
-    const user = users.find(u => u.email === req.params.email);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Remove sensitive data
-    const { password, ...safeUser } = user;
-    res.json(safeUser);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+// Helper to hash passwords
+async function hashPassword(password) {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
+}
 
 // Register a new user
 app.post('/api/users/register', async (req, res) => {
   try {
     const { email, username, password, phoneNumber } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
-    
-    // Read existing users
-    const users = await readUsers();
-    
-    // Check if email already exists
-    if (users.some(user => user.email === email)) {
-      return res.status(400).json({ error: 'Email already registered' });
-    }
-    
-    // Add new user
-    users.push({
-      email,
-      username: username || null,
-      phoneNumber: phoneNumber || null,
-      password, // In production, this should be hashed
-      createdAt: new Date().toISOString()
-    });
-    
-    await writeUsers(users);
-    
-    // Return success without the password
-    res.status(201).json({
-      email,
-      username: username || null,
-      phoneNumber: phoneNumber || null,
-      createdAt: new Date().toISOString()
+
+    const hashedPassword = await hashPassword(password);
+    const createdAt = new Date().toISOString();
+
+    db.run('INSERT INTO users (email, username, password, phoneNumber, createdAt) VALUES (?, ?, ?, ?, ?)', [email, username, hashedPassword, phoneNumber, createdAt], function (err) {
+      if (err) {
+        return res.status(500).json({ error: 'Server error' });
+      }
+      res.status(201).json({ email, username, phoneNumber, createdAt });
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -106,85 +47,80 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // Login
-app.post('/api/users/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-    
-    // Read users
-    const users = await readUsers();
-    
-    // Find user
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (!user) {
+app.post('/api/users/login', (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+    if (err || !user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
-    // Return user data without password
-    const { password: _, ...userData } = user;
+    const { password, ...userData } = user;
     res.json(userData);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
+  });
 });
 
 // Update user profile
-app.put('/api/users/profile', async (req, res) => {
-  try {
-    const { email, username, phoneNumber } = req.body;
-    
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-    
-    // Read users
-    const users = await readUsers();
-    
-    // Find user index
-    const userIndex = users.findIndex(u => u.email === email);
-    
-    if (userIndex === -1) {
+app.put('/api/users/profile', (req, res) => {
+  const { email, username, phoneNumber } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  db.run('UPDATE users SET username = ?, phoneNumber = ? WHERE email = ?', [username, phoneNumber, email], function (err) {
+    if (err || this.changes === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    // Update user
-    if (username !== undefined) {
-      users[userIndex].username = username;
-    }
-    
-    if (phoneNumber !== undefined) {
-      users[userIndex].phoneNumber = phoneNumber;
-    }
-    
-    await writeUsers(users);
-    
-    // Return updated user without password
-    const { password: _, ...userData } = users[userIndex];
-    res.json(userData);
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
+      const { password, ...userData } = user;
+      res.json(userData);
+    });
+  });
+});
+
+// Collect Paw Points
+app.post('/api/users/collect-paw-points', (req, res) => {
+  const { email, points } = req.body;
+
+  if (!email || !points) {
+    return res.status(400).json({ error: 'Email and points are required' });
   }
+
+  db.run('UPDATE users SET paw_points = paw_points + ? WHERE email = ?', [points, email], function (err) {
+    if (err) {
+      return res.status(500).json({ error: 'Server error' });
+    }
+    res.json({ message: `${points} paw points collected` });
+  });
+});
+
+// Get User Data including Paw Points
+app.get('/api/users/:email', (req, res) => {
+  const email = req.params.email;
+
+  db.get('SELECT email, username, phoneNumber, createdAt, paw_points FROM users WHERE email = ?', [email], (err, user) => {
+    if (err || !user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  });
+});
+
+// Get Leaderboard
+app.get('/api/leaderboard', (req, res) => {
+  db.all('SELECT email, username, paw_points FROM users ORDER BY paw_points DESC', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Server error' });
+    }
+    res.json(rows);
+  });
 });
 
 // Start server
-// Create necessary users.json file if it doesn't exist
-async function ensureUsersFileExists() {
-  try {
-    await fs.access(USERS_FILE);
-  } catch (error) {
-    // File doesn't exist, create it
-    await writeUsers([]);
-    console.log('Created users.json file');
-  }
-}
-
-// Initialize data
-ensureUsersFileExists();
-
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
 });
