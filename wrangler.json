@@ -1,0 +1,19 @@
+{
+  "name": "care4pawsofficial2",
+  "type": "javascript",
+  "account_id": "YOUR_ACCOUNT_ID",
+  "workers_dev": true,
+  "compatibility_date": "2025-03-26",
+  "build": {
+    "command": "npm install && npm run build",
+    "cwd": "./",
+    "watch_dir": "./"
+  },
+  "env": {
+    "production": {
+      "workers_dev": false,
+      "zone_id": "YOUR_ZONE_ID",
+      "route": "YOUR_DOMAIN/*"
+    }
+  }
+}
