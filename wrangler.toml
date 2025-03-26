@@ -1,9 +1,9 @@
 name = "care4pawsofficial2"
-type = "javascript"
+type = "webpack"
 account_id = "abc123def456gh789"
 workers_dev = true
 compatibility_date = "2025-03-26"
-main = "dist/index.js"  # Specify the entry point
+main = "src/index.js"  # Updated entry point
 
 [build]
 command = "npm install && npm run build"
