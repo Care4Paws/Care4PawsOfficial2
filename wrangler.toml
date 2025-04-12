@@ -1,12 +1,7 @@
-name = "care4pawsofficial2"
-compatibility_date = "2025-04-12"
+name = "care4paws-backend"
+main = "index.js" # Ensure this points to your backend script file
+type = "javascript"
 
-[site]
-bucket = "." # Serve files from the root folder.
-
-[env.production]
-workers_dev = true # Enables deployment to workers.dev subdomain.
-
-[account]
-email = "Care4pawsneaionia@gmail.com"
-api_token = "your_actual_api_token_here"
+[[kv_namespaces]]
+binding = "UsersKV" # This must match the binding name in your code
+id = "YOUR_KV_NAMESPACE_ID" # Replace with your actual KV namespace ID from the Cloudflare dashboard
