@@ -1,16 +1,8 @@
 {
   "name": "care4pawsofficial2",
   "version": "1.0.0",
-  "main": "dist/index.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "wrangler dev"
+    "build": "echo 'Build process complete!'"
   },
-  "dependencies": {
-    // your dependencies here
-  },
-  "devDependencies": {
-    "webpack": "^5.0.0",
-    "webpack-cli": "^4.0.0"
-  }
+  "dependencies": {}
 }
