@@ -4,7 +4,7 @@
   "description": "Care4PawsOfficial2 project",
   "main": "index.js",
   "scripts": {
-    "build": "echo 'Building the project...' && exit 0",
+    "build": "echo 'Building the project...'",
     "deploy": "npm cache clean --force && npm install && npm run build && npx wrangler publish"
   },
   "author": "Care4Paws",

@@ -1,7 +1,6 @@
 name = "care4paws"
-main = "./dist/index.js"
 compatibility_date = "2025-04-12"
 
 [site]
-bucket = "./dist"
+bucket = "."  # Root directory
 entry-point = "workers-site"
