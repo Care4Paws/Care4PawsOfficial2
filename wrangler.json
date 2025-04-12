@@ -1,9 +1,6 @@
 {
   "name": "care4paws",
   "compatibility_date": "2025-04-12",
-  "site": {
-    "bucket": "."
-  },
   "env": {
     "production": {
       "workers_dev": true
