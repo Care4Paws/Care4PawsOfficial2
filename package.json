@@ -2,8 +2,8 @@
   "name": "care4pawsofficial2",
   "version": "1.0.0",
   "scripts": {
-    "build": "webpack --mode production",
-    "deploy": "npx wrangler deploy"
+    "build": "webpack --mode production", 
+    "deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {
     "webpack": "^5.0.0",

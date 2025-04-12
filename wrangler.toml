@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-name = "site"
+name = "care4pawsofficial2"
 compatibility_date = "2025-04-12"
 
 [site]
@@ -10,11 +9,4 @@ workers_dev = true # Enables deployment to workers.dev subdomain.
 
 [account]
 email = "Care4pawsneaionia@gmail.com"
-api_token = "your_actual_api_token_here"
-
-[observability.logs]
-enabled = true
-=======
-[build]
-command = "npm install && npm run build && npm run deploy"
->>>>>>> parent of 726d439 (WORK NOW)
+api_token = "your_actual_api_token_here" # Replace with your API token.
