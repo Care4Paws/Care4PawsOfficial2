@@ -1,14 +1,12 @@
 {
   "name": "care4paws",
   "version": "1.0.0",
-  "description": "Care4PawsOfficial2 project",
+  "description": "Care4Paws Official Project",
   "main": "index.js",
   "scripts": {
-    "build": "echo 'Building the project...'",
+    "build": "echo 'Building project...'",
     "deploy": "npm cache clean --force && npm install && npm run build && npx wrangler publish"
   },
-  "author": "Care4Paws",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.21.2",
