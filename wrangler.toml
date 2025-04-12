@@ -1,7 +1,7 @@
 name = "care4paws-backend"
-main = "index.js" # Ensure this points to your backend script file
+main = "src/index.js"  # Update this if your entry file is located elsewhere
 type = "javascript"
 
 [[kv_namespaces]]
-binding = "UsersKV" # This must match the binding name in your code
-id = "YOUR_KV_NAMESPACE_ID" # Replace with your actual KV namespace ID from the Cloudflare dashboard
+binding = "UsersKV"  # Optional: Remove if you're not using Workers KV
+id = "YOUR_KV_NAMESPACE_ID"  # Replace with your actual KV Namespace ID or leave empty for now
