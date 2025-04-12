@@ -1,7 +1,7 @@
 {
   "name": "care4paws",
   "compatibility_date": "2025-04-12",
-  "account_id": "  ",  // Replace with your actual Cloudflare account ID
+  "account_id": "1e24402ba8b2d012adb5f1a038038ef7",  // Replace with your actual Cloudflare account ID
   "main": "dist/index.js",
   "env": {
     "production": {
