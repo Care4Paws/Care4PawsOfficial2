@@ -2,7 +2,10 @@
   "name": "care4pawsofficial2",
   "version": "1.0.0",
   "scripts": {
-    "build": "echo 'Build process complete!'"
+    "build": "webpack --mode production"
   },
-  "dependencies": {}
+  "dependencies": {
+    "webpack": "^5.0.0",
+    "webpack-cli": "^4.0.0"
+  }
 }
