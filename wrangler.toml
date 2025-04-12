@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name = "site"
 compatibility_date = "2025-04-12"
 
@@ -13,3 +14,7 @@ api_token = "your_actual_api_token_here"
 
 [observability.logs]
 enabled = true
+=======
+[build]
+command = "npm install && npm run build && npm run deploy"
+>>>>>>> parent of 726d439 (WORK NOW)
