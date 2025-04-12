@@ -1,13 +1,10 @@
 {
   "name": "care4paws",
   "compatibility_date": "2025-04-12",
+  "account_id": "YOUR_ACCOUNT_ID",  // Replace with your Cloudflare account ID
   "env": {
     "production": {
       "workers_dev": true
     }
-  },
-  "account": {
-    "email": "Care4pawsneaionia@gmail.com",
-    "api_token": "your_actual_api_token_here"
   }
 }
