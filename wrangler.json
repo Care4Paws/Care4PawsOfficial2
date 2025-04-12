@@ -1,20 +1,16 @@
 {
-  "name": "care4pawsofficial2",
-  "type": "javascript",
-  "account_id": "abc123def456gh789",
-  "workers_dev": true,
-  "compatibility_date": "2025-03-26",
-  "main": "dist/index.js",  # Specify the entry point
-  "build": {
-    "command": "npm install && npm run build",
-    "cwd": "./",
-    "watch_dir": "./"
+  "site": "care4pawsofficial2",
+  "compatibility_date": "2025-04-12",
+  "site": {
+    "bucket": "."
   },
   "env": {
     "production": {
-      "workers_dev": false,
-      "zone_id": "xyz987uvw654ts321",
-      "route": "care4paws.example.com/*"
+      "workers_dev": true
     }
+  },
+  "account": {
+    "email": "Care4pawsneaionia@gmail.com",
+    "api_token": "your_actual_api_token_here"
   }
 }
