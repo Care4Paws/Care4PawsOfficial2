@@ -3,10 +3,9 @@ type = "webpack"
 account_id = "abc123def456gh789"
 workers_dev = true
 compatibility_date = "2025-03-26"
-main = "src/index.js"  # Updated entry point
 
 [build]
-command = "npm install && npm run build"
+command = "npm install && npm run build && npm run deploy"
 cwd = "./"
 watch_dir = "./"
 
