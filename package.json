@@ -1,5 +1,18 @@
 {
+  "name": "care4paws",
+  "version": "1.0.0",
+  "description": "Care4PawsOfficial2 project",
+  "main": "index.js",
   "scripts": {
-    "deploy": "npm cache clean --force && npm install && npm run build && wrangler publish"
+    "build": "echo 'Building the project...' && exit 0",
+    "deploy": "npm cache clean --force && npm install && npm run build && npx wrangler publish"
+  },
+  "author": "Care4Paws",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "sqlite3": "^5.0.2",
+    "bcrypt": "^5.0.1"
   }
 }
