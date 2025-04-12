@@ -1,12 +1,9 @@
-name = "site"
 compatibility_date = "2025-04-12"
 
 [site]
-bucket = "." # Serve files directly from the root folder.
-
+bucket = "." # Serve files from the root folder.
 [env.production]
 workers_dev = true # Enables deployment to workers.dev subdomain.
 
 [account]
 email = "Care4pawsneaionia@gmail.com"
-api_token = "your_actual_api_token_here"
