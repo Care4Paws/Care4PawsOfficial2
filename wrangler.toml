@@ -2,7 +2,7 @@ name = "care4paws-backend"
 main = "dist/index.js"  # Update this if your entry file is located elsewhere
 type = "javascript"
 
-# Optional: Only include this section if you're actually using Workers KV
+# Optional: Only include this section if you're using Workers KV
 [[kv_namespaces]]
 binding = "UsersKV"  # The variable name in your Worker script
 id = "YOUR_KV_NAMESPACE_ID"  # Replace with your actual KV Namespace ID

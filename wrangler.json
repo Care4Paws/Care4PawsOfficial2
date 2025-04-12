@@ -2,6 +2,7 @@
   "name": "care4paws",
   "compatibility_date": "2025-04-12",
   "account_id": "YOUR_ACCOUNT_ID",  // Replace with your Cloudflare account ID
+  "main": "dist/index.js",
   "env": {
     "production": {
       "workers_dev": true
